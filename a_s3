@@ -1,0 +1,80 @@
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.BasicSessionCredentials
+import groovy.json.JsonSlurper
+
+class MetadataServiceCredentialsProvider implements AWSCredentialsProvider {
+    private static final String METADATA_URL = "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+    private AWSCredentials credentials
+
+    MetadataServiceCredentialsProvider() {
+        refresh()
+    }
+
+    @Override
+    AWSCredentials getCredentials() {
+        if (credentials == null) {
+            refresh()
+        }
+        return credentials
+    }
+
+    @Override
+    void refresh() {
+        try {
+            // Fetch the role name
+            String roleName = fetchMetadata(METADATA_URL).trim()
+            // Fetch the credentials JSON
+            String credentialsJson = fetchMetadata(METADATA_URL + roleName)
+            def credentialsNode = new JsonSlurper().parseText(credentialsJson)
+            String accessKeyId = credentialsNode.AccessKeyId
+            String secretAccessKey = credentialsNode.SecretAccessKey
+            String token = credentialsNode.Token
+
+            credentials = new BasicSessionCredentials(accessKeyId, secretAccessKey, token)
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch credentials from metadata service", e)
+        }
+    }
+
+    private String fetchMetadata(String urlString) throws Exception {
+        def url = new URL(urlString)
+        def connection = url.openConnection()
+        connection.setRequestMethod("GET")
+        def inputStream = connection.getInputStream()
+        return inputStream.text
+    }
+}
+
+
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.regions.Regions
+
+class S3ClientExample {
+    static void main(String[] args) {
+        def provider = new MetadataServiceCredentialsProvider()
+
+        // Debugging: Print credentials to verify they are being retrieved
+        try {
+            println "Access Key: " + provider.getCredentials().getAWSAccessKeyId()
+            println "Secret Key: " + provider.getCredentials().getAWSSecretKey()
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                .withRegion(Regions.US_EAST_1)
+                .withCredentials(provider)
+                .build()
+
+        // Test listing buckets to verify client works
+        try {
+            s3Client.listBuckets().each { bucket ->
+                println bucket.getName()
+            }
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+    }
+}
