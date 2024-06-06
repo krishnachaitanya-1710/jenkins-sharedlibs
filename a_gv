@@ -1,0 +1,69 @@
+package com.aries.dal.common
+
+import groovy.json.JsonSlurper
+
+class GlobalVars {
+    // Define some example static final variables
+    static final String javaToolVersion = "1.8"
+    static final String terraformVersion = "0.12.14"
+    static final String credId = "123"
+    static final List<String> approvedDomains = ["test", "bua"]
+    static final Map<String, String> areaMap = ["test": "testing", "aries": "corp"]
+
+    private static Map<String, Object> globalVars = [:]
+    private static boolean initialized = false
+
+    static synchronized void loadFromMap(Map<String, Object> vars) {
+        if (!initialized) {
+            try {
+                initialize(vars)
+                initialized = true
+                println "GlobalVars initialized successfully."
+            } catch (Exception e) {
+                println "Failed to initialize GlobalVars: ${e.message}"
+                e.printStackTrace()
+                useDefaultGlobalVars()
+                initialized = true
+            }
+        }
+    }
+
+    private static void initialize(Map<String, Object> vars) {
+        globalVars = vars
+        createStaticFields()
+    }
+
+    private static void useDefaultGlobalVars() {
+        println "Using default globalVars..."
+        loadStaticFields()
+        createStaticFields()
+    }
+
+    private static void loadStaticFields() {
+        GlobalVars.declaredFields.each { field ->
+            if (field.modifiers.contains(Modifier.STATIC) && field.modifiers.contains(Modifier.FINAL)) {
+                field.accessible = true
+                globalVars[field.name] = field.get(null)
+            }
+        }
+    }
+
+    private static void createStaticFields() {
+        println "Creating static fields..."
+        globalVars.each { key, value ->
+            GlobalVars.metaClass.static."$key" = value
+        }
+    }
+
+    static Object get(String name) {
+        ensureInitialized()
+        return globalVars[name]
+    }
+
+    private static void ensureInitialized() {
+        if (!initialized) {
+            useDefaultGlobalVars()
+            initialized = true
+        }
+    }
+}
