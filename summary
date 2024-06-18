@@ -1,0 +1,13 @@
+I'd like to provide an update regarding an issue we're experiencing with AquaSec scanning due to recent changes we introduced based on the CHS team's instructions. Here's a summary of the situation:
+
+Previous Setup:
+Commands: Used to invoke AquaSec without additional arguments and policies were empty.
+Current Setup:
+New Commands: We have added additional arguments such as containerRuntime: podman and scannerPath: /home/jenkins/scannerCli to support Podman as a container runtime.
+Policy Changes: Introduced updates to policies under chs-pipeline.
+Issue:
+TRM Concerns: TRM has identified issues with the policy changes and has reached out to me for clarification.
+Provided Information: I have explained the changes and the reasons behind them to TRM. They may reach out to you for further information.
+Please be aware of this update and the potential inquiries from TRM regarding the policy changes.
+
+Best regards,
