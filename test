@@ -1,0 +1,201 @@
+Sure, I can provide you with a detailed README file with color-coded phases to showcase the current status. Markdown, the format commonly used for README files in repositories like Bitbucket, supports some level of color coding through HTML.
+
+
+EDSO Smart Assistant Roadmap
+Introduction
+The EDSO Smart Assistant project aims to enhance the efficiency of operational activities within the EDSO domain. This document outlines the roadmap for the project, detailing each phase, activities, objectives, and deliverables.
+
+Roadmap Phases
+1. Initial Planning and Requirements Gathering
+Duration: WK1-WK4
+Status: <span style="color:red">Completed</span>
+
+Finalize Project Scope: Define clear project goals, objectives, and scope.
+Stakeholder Meetings: Conduct meetings with all stakeholders to gather requirements.
+Resource Allocation: Identify and allocate necessary resources.
+Timeline and Milestones: Establish a detailed timeline with key milestones.
+2. Design and Architecture
+Duration: WK5-WK8
+Status: <span style="color:orange">In Progress</span>
+
+System Architecture Design: Define the overall system architecture.
+User Interface Design: Create wireframes and mockups; conduct feedback sessions.
+Technical Specifications: Prepare detailed technical specifications.
+3. Development
+Duration: WK9-WK12
+Status: <span style="color:gray">Pending</span>
+
+Frontend Development: Implement the user interface using Angular.
+Backend Development: Set up Spring Boot backend and develop APIs.
+Integration: Integrate with Jenkins, DDP, and other systems.
+Feature Development: Develop chatbot functionalities, error handling, etc.
+4. Testing
+Duration: WK13-WK16
+Status: <span style="color:gray">Pending</span>
+
+Unit Testing: Conduct unit tests for individual components.
+Integration Testing: Test the integration of various components and services.
+User Acceptance Testing (UAT): Conduct UAT with stakeholders.
+Performance Testing: Ensure the application can handle expected loads.
+5. Deployment
+Duration: WK17
+Status: <span style="color:gray">Pending</span>
+
+Deployment Planning: Prepare deployment scripts and documentation.
+Staging Deployment: Deploy to a staging environment for final testing.
+Production Deployment: Deploy to the production environment.
+6. Post-Deployment Support
+Duration: WK18
+Status: <span style="color:gray">Pending</span>
+
+Monitoring and Support: Set up monitoring tools and provide initial support.
+Documentation: Complete and distribute user and technical documentation.
+7. Future Enhancements and Maintenance
+Duration: WK19-WK20
+Status: <span style="color:gray">Pending</span>
+
+User Feedback and Iteration: Collect user feedback and plan improvements.
+Feature Enhancements: Introduce new features based on user needs.
+Maintenance and Updates: Regularly update the application for security and performance.
+Timeline Overview
+
+Conclusion
+This roadmap provides a structured plan to take the EDSO Smart Assistant from prototype to a fully functional and integrated application. Regular updates and maintenance will ensure its continued relevance and efficiency.
+Here’s a README file structure that includes slight changes and color codes:
+
+---
+
+## EDSO Smart Assistant Roadmap
+
+### Introduction
+The EDSO Smart Assistant project aims to enhance the efficiency of operational activities within the EDSO domain. This document outlines the roadmap for the project, detailing each phase, activities, objectives, and deliverables.
+
+### Roadmap Phases
+
+#### 1. Initial Planning and Requirements Gathering
+**Duration**: WK1-WK4  
+**Status**: <span style="color:red">Completed</span>
+
+- Finalize Project Scope: Define clear project goals, objectives, and scope.
+- Stakeholder Meetings: Conduct meetings with all stakeholders to gather requirements.
+- Resource Allocation: Identify and allocate necessary resources.
+- Timeline and Milestones: Establish a detailed timeline with key milestones.
+
+#### 2. Design and Architecture
+**Duration**: WK5-WK8  
+**Status**: <span style="color:orange">In Progress</span>
+
+- System Architecture Design: Define the overall system architecture.
+- User Interface Design: Create wireframes and mockups; conduct feedback sessions.
+- Technical Specifications: Prepare detailed technical specifications.
+
+#### 3. Development
+**Duration**: WK9-WK12  
+**Status**: <span style="color:gray">Pending</span>
+
+- Frontend Development: Implement the user interface using Angular.
+- Backend Development: Set up Spring Boot backend and develop APIs.
+- Integration: Integrate with Jenkins, DDP, and other systems.
+- Feature Development: Develop chatbot functionalities, error handling, etc.
+
+#### 4. Testing
+**Duration**: WK13-WK16  
+**Status**: <span style="color:gray">Pending</span>
+
+- Unit Testing: Conduct unit tests for individual components.
+- Integration Testing: Test the integration of various components and services.
+- User Acceptance Testing (UAT): Conduct UAT with stakeholders.
+- Performance Testing: Ensure the application can handle expected loads.
+
+#### 5. Deployment
+**Duration**: WK17  
+**Status**: <span style="color:gray">Pending</span>
+
+- Deployment Planning: Prepare deployment scripts and documentation.
+- Staging Deployment: Deploy to a staging environment for final testing.
+- Production Deployment: Deploy to the production environment.
+
+#### 6. Post-Deployment Support
+**Duration**: WK18  
+**Status**: <span style="color:gray">Pending</span>
+
+- Monitoring and Support: Set up monitoring tools and provide initial support.
+- Documentation: Complete and distribute user and technical documentation.
+
+#### 7. Future Enhancements and Maintenance
+**Duration**: WK19-WK20  
+**Status**: <span style="color:gray">Pending</span>
+
+- User Feedback and Iteration: Collect user feedback and plan improvements.
+- Feature Enhancements: Introduce new features based on user needs.
+- Maintenance and Updates: Regularly update the application for security and performance.
+
+### Timeline Overview
+![Roadmap Timeline](path/to/timeline_image.png)
+
+### Conclusion
+This roadmap provides a structured plan to take the EDSO Smart Assistant from prototype to a fully functional and integrated application. Regular updates and maintenance will ensure its continued relevance and efficiency.
+
+---
+
+For Bitbucket, you can include the actual HTML code to ensure colors are displayed correctly:
+
+```markdown
+## EDSO Smart Assistant Roadmap
+
+### Introduction
+The EDSO Smart Assistant project aims to enhance the efficiency of operational activities within the EDSO domain. This document outlines the roadmap for the project, detailing each phase, activities, objectives, and deliverables.
+
+### Roadmap Phases
+
+#### 1. Initial Planning and Requirements Gathering
+**Duration**: WK1-WK4  
+**Status**: <span style="color:red">Completed</span>
+
+- Finalize Project Scope: Define clear project goals, objectives, and scope.
+- Stakeholder Meetings: Conduct meetings with all stakeholders to gather requirements.
+- Resource Allocation: Identify and allocate necessary resources.
+- Timeline and Milestones: Establish a detailed timeline with key milestones.
+
+#### 2. Design and Architecture
+**Duration**: WK5-WK8  
+**Status**: <span style="color:orange">In Progress</span>
+
+- System Architecture Design: Define the overall system architecture.
+- User Interface Design: Create wireframes and mockups; conduct feedback sessions.
+- Technical Specifications: Prepare detailed technical specifications.
+
+#### 3. Development
+**Duration**: WK9-WK12  
+**Status**: <span style="color:gray">Pending</span>
+
+- Frontend Development: Implement the user interface using Angular.
+- Backend Development: Set up Spring Boot backend and develop APIs.
+- Integration: Integrate with Jenkins, DDP, and other systems.
+- Feature Development: Develop chatbot functionalities, error handling, etc.
+
+#### 4. Testing
+**Duration**: WK13-WK16  
+**Status**: <span style="color:gray">Pending</span>
+
+- Unit Testing: Conduct unit tests for individual components.
+- Integration Testing: Test the integration of various components and services.
+- User Acceptance Testing (UAT): Conduct UAT with stakeholders.
+- Performance Testing: Ensure the application can handle expected loads.
+
+#### 5. Deployment
+**Duration**: WK17  
+**Status**: <span style="color:gray">Pending</span>
+
+- Deployment Planning: Prepare deployment scripts and documentation.
+- Staging Deployment: Deploy to a staging environment for final testing.
+- Production Deployment: Deploy to the production environment.
+
+#### 6. Post-Deployment Support
+**Duration**: WK18  
+**Status**: <span style="color:gray">Pending</span>
+
+- Monitoring and Support: Set up monitoring tools and provide initial support.
+- Documentation: Complete and distribute user and technical documentation.
+
+#### 7.
