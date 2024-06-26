@@ -1,3 +1,22 @@
+Technical Design Document for EDSO Smart Assistant
+Introduction
+The EDSO Smart Assistant aims to streamline operations by automating responses to common queries, providing stock answers for unmodeled areas, and delivering data insights. This document outlines the technical design for the initial release of the smart assistant application.
+
+Background
+The prototype of the EDSO Smart Assistant has been approved, and a roadmap has been established. This document focuses on supporting the baseline requirements provided by the DSO Customer Care team, aiming to incorporate essential features in the initial release.
+
+Requirements
+The primary requirements for the smart assistant are as follows:
+
+Ability to get answers to questions for areas where we have modeled the Q&A: This involves pre-defined questions and answers stored in the system.
+Ability to provide stock answers (e.g., "please reach out to customer care") to questions for areas where we have not modeled the Q&A: This ensures that users still receive a response even if specific content is not yet available.
+Ability to provide data insights like the number of questions asked, the number of users asking questions, etc.: This involves tracking and reporting key metrics for continuous improvement and analysis.
+Goals
+The goals of the initial release are:
+
+To create a robust Q&A system that can accurately respond to user queries based on pre-modeled data.
+To implement fallback mechanisms that provide stock responses for unmodeled queries.
+To develop analytics capabilities that offer insights into user interactions and system performance.
 Design
 1. Architecture Overview
 The system architecture will be a multi-tier design, comprising the following layers:
@@ -35,3 +54,4 @@ Logging: Comprehensive logging of all interactions and errors.
 Monitoring: Real-time monitoring and alerting for service disruptions or errors.
 Conclusion
 This technical design document provides a detailed plan for implementing the initial release of the EDSO Smart Assistant, focusing on the baseline requirements provided. The proposed architecture and components ensure a scalable, secure, and efficient system that meets the outlined goals.
+
