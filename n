@@ -1,0 +1,35 @@
+Here's a response to your manager addressing the feasibility and providing suggestions for handling the error messages related to deployment readiness:
+
+---
+
+Hi [Manager's Name],
+
+Regarding the request to scrape the "Deployment is not ready" status in the pipeline and project an appropriate error message for users, I have reviewed the current process and have some observations and suggestions.
+
+### Observations
+1. **Variable Error Messages:** The message "Deployment is not ready" can appear in various forms and contexts, making it challenging to scrape consistently.
+2. **Pipeline Integration:** Directly scraping log outputs within the pipeline may not be the most efficient or reliable method due to the variability in error messages and the need for real-time log processing.
+
+### Suggestions
+1. **Helm Error Handling:** Utilize Helm's built-in error handling capabilities. Helm commands (`helm install`, `helm upgrade`) return non-zero exit codes upon failure. We can capture these exit codes in the pipeline to detect failures.
+2. **Enhanced Logging:** Implement more structured logging within our Helm charts and Kubernetes configurations to output specific and consistent error messages. This structured logging can then be parsed more easily by the pipeline.
+3. **Health Checks and Probes:** Use Kubernetes health checks (readiness and liveness probes) to determine the state of deployments. The status of these checks can be monitored and reported within the pipeline.
+4. **Custom Scripts:** Develop custom scripts or tools to parse the Kubernetes events and pod statuses. These scripts can provide more detailed and user-friendly error messages based on the conditions observed.
+5. **Webhook Notifications:** Set up Kubernetes webhook notifications to alert us in real-time when deployments fail or do not become ready. These notifications can be integrated with the pipeline to provide immediate feedback.
+
+### Implementation Proposal
+1. **Error Code Capture:** Update the pipeline scripts to capture Helm exit codes and log outputs, and trigger alerts or specific error messages when non-zero exit codes are detected.
+2. **Structured Logs:** Modify our Helm charts and Kubernetes configurations to include structured log messages that can be more easily parsed and interpreted.
+3. **Deployment Status Checks:** Incorporate additional steps in the pipeline to check the status of deployments using `kubectl` commands, focusing on readiness and liveness probes.
+4. **Automation and Notification:** Develop scripts to automate the parsing of Kubernetes events and set up webhook notifications for real-time alerts on deployment failures.
+
+By implementing these suggestions, we can provide more accurate and actionable error messages to users, enhancing the overall deployment process.
+
+Please let me know if we can schedule a meeting to discuss this approach further and outline the next steps.
+
+Best regards,
+Sai
+
+---
+
+Feel free to adjust any part of this response as needed before sending it out.
