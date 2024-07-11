@@ -1,0 +1,9 @@
+Here's a revised version of your message:
+
+---
+
+The current blocker is with the infrastructure, and we are unsure which component it pertains to. Regarding the Smart Assistant MVP question my manager asked, I was reviewing the configuration management, as it was decided to go with config management in the previous call with Song and Dave. It seems to have a different design. First, we need to convert the Smart Assistant into a shared component, which can then be imported into configuration management. This concerns the UI part, and I am unsure where to deploy the backend. Does it need to go with the DDP app service? I am not sure.
+
+---
+
+Feel free to adjust any details as needed.
