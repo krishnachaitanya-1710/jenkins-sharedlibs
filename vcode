@@ -1,0 +1,5 @@
+# Install Veracode pipeline scan utility if not installed
+pip install veracode-pipeline-scan
+
+# Run Veracode pipeline scan with your repository and commit hash
+veracode-pipeline-scan --repo-url "https://your-repo-url.git" --commit-hash "your_commit_hash" --api-id "$VERACODE_API_ID" --api-key "$VERACODE_API_KEY" --project "your-project-name"
