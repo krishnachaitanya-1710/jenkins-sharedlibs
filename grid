@@ -1,0 +1,128 @@
+<ag-grid-angular
+  style="width: 100%; height: 500px;"
+  class="ag-theme-balham custom-ag-theme"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [sideBar]="sideBar"
+  [enableRangeSelection]="true"
+  [enableCharts]="true"
+  [animateRows]="true"
+  domLayout="autoHeight">
+</ag-grid-angular>
+
+
+
+@import "~ag-grid-community/styles/ag-grid.css";
+@import "~ag-grid-community/styles/ag-theme-balham.css";
+
+.custom-ag-theme .ag-header-cell-label {
+  font-weight: bold;
+  font-size: 16px; /* Adjust the size as needed */
+}
+
+.bold-header {
+  font-weight: bold;
+  font-size: 16px; /* Adjust the size as needed */
+}
+
+
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-admin-management',
+  templateUrl: './admin-management.component.html',
+  styleUrls: ['./admin-management.component.scss']
+})
+export class AdminManagementComponent implements OnInit {
+  columnDefs = [];
+  rowData = [];
+  defaultColDef = {
+    flex: 1,
+    minWidth: 100,
+    filter: true,
+    sortable: true,
+    resizable: true,
+    headerClass: 'bold-header' // Add a class to make headers bold
+  };
+  sideBar = {
+    toolPanels: [
+      {
+        id: 'columns',
+        labelDefault: 'Columns',
+        labelKey: 'columns',
+        iconKey: 'columns',
+        toolPanel: 'agColumnsToolPanel',
+        minWidth: 225,
+        maxWidth: 225
+      },
+      {
+        id: 'filters',
+        labelDefault: 'Filters',
+        labelKey: 'filters',
+        iconKey: 'filter',
+        toolPanel: 'agFiltersToolPanel',
+        minWidth: 225,
+        maxWidth: 225
+      }
+    ],
+    defaultToolPanel: 'columns'
+  };
+
+  fieldsToSkip = ['context', 'useQueryParamsInPost'];
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/config.json').subscribe((data: any) => {
+      this.parseConfigData(data);
+    });
+  }
+
+  parseConfigData(data: any) {
+    if (data.services && data.services.length > 0) {
+      const apis = data.services.reduce((acc, service) => acc.concat(service.apis), []);
+      this.generateColumnDefs(apis);
+      this.generateRowData(apis);
+    }
+  }
+
+  generateColumnDefs(apis: any[]) {
+    if (apis.length > 0) {
+      const allKeys = new Set<string>();
+      apis.forEach(api => {
+        Object.keys(api).forEach(key => {
+          if (!this.fieldsToSkip.includes(key)) {
+            allKeys.add(key);
+          }
+        });
+      });
+
+      this.columnDefs = Array.from(allKeys).map(key => ({
+        headerName: key.charAt(0).toUpperCase() + key.slice(1),
+        field: key,
+        sortable: true,
+        filter: true,
+        cellRenderer: (params) => {
+          if (Array.isArray(params.value)) {
+            return params.value.join(', ');
+          }
+          return params.value ? params.value : '-';
+        }
+      }));
+    }
+  }
+
+  generateRowData(apis: any[]) {
+    this.rowData = apis.map(api => {
+      let row = {};
+      Object.keys(api).forEach(key => {
+        if (!this.fieldsToSkip.includes(key)) {
+          row[key] = Array.isArray(api[key]) ? api[key].join(', ') : (api[key] || '-');
+        }
+      });
+      return row;
+    });
+  }
+}
