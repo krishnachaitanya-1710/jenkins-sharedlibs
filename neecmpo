@@ -1,0 +1,218 @@
+To create a smart assistant page for audit logs and reports that includes capturing usage metrics, we can set up two new components: `AuditLogsComponent` and `ReportsComponent`. Here’s a step-by-step guide, including ideas for capturing and displaying usage metrics.
+
+### 1. **Setting Up Angular Components**
+
+First, create the components using Angular CLI:
+
+```bash
+ng generate component audit-logs
+ng generate component reports
+```
+
+### 2. **Update Routing Module**
+
+Ensure your `app-routing.module.ts` is updated to include routes for the new components:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { AdminManagementComponent } from './admin-management/admin-management.component';
+import { AuditLogsComponent } from './audit-logs/audit-logs.component';
+import { ReportsComponent } from './reports/reports.component';
+
+const routes: Routes = [
+  { path: '', redirectTo: '/admin-management', pathMatch: 'full' },
+  { path: 'admin-management', component: AdminManagementComponent },
+  { path: 'audit-logs', component: AuditLogsComponent },
+  { path: 'reports', component: ReportsComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+### 3. **Audit Logs Component**
+
+#### HTML (`audit-logs.component.html`)
+
+```html
+<div class="panel_format table_container">
+  <div class="header-container">
+    <span class="heading">Audit Logs</span>
+    <input class="search-input" type="search" placeholder="Search..." (input)="onQuickFilterChanged($event)">
+  </div>
+  <ag-grid-angular
+    style="width: 100%; height: 600px;"
+    class="ag-theme-balham"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [pagination]="true"
+    [paginationPageSize]="paginationPageSize"
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
+</div>
+```
+
+#### TypeScript (`audit-logs.component.ts`)
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-audit-logs',
+  templateUrl: './audit-logs.component.html',
+  styleUrls: ['./audit-logs.component.scss']
+})
+export class AuditLogsComponent implements OnInit {
+  columnDefs = [
+    { headerName: 'User', field: 'user', sortable: true, filter: true },
+    { headerName: 'Action', field: 'action', sortable: true, filter: true },
+    { headerName: 'Timestamp', field: 'timestamp', sortable: true, filter: true }
+  ];
+  rowData = [];
+  defaultColDef = {
+    flex: 1,
+    minWidth: 100,
+    filter: true,
+    sortable: true,
+    resizable: true
+  };
+  paginationPageSize = 10;
+  private gridApi;
+  private gridColumnApi;
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/audit-logs.json').subscribe((data: any) => {
+      this.rowData = data;
+    });
+  }
+
+  onGridReady(params) {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+  }
+
+  onQuickFilterChanged(event) {
+    this.gridApi.setQuickFilter(event.target.value);
+  }
+}
+```
+
+#### JSON Data (`assets/audit-logs.json`)
+
+```json
+[
+  { "user": "User1", "action": "Login", "timestamp": "2024-07-25 10:15:00" },
+  { "user": "User2", "action": "Logout", "timestamp": "2024-07-25 11:00:00" },
+  ...
+]
+```
+
+### 4. **Reports Component**
+
+#### HTML (`reports.component.html`)
+
+```html
+<div class="panel_format table_container">
+  <div class="header-container">
+    <span class="heading">Reports</span>
+    <input class="search-input" type="search" placeholder="Search..." (input)="onQuickFilterChanged($event)">
+  </div>
+  <ag-grid-angular
+    style="width: 100%; height: 600px;"
+    class="ag-theme-balham"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [pagination]="true"
+    [paginationPageSize]="paginationPageSize"
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
+</div>
+```
+
+#### TypeScript (`reports.component.ts`)
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  columnDefs = [
+    { headerName: 'API', field: 'api', sortable: true, filter: true },
+    { headerName: 'Usage Count', field: 'usageCount', sortable: true, filter: true },
+    { headerName: 'Last Accessed', field: 'lastAccessed', sortable: true, filter: true }
+  ];
+  rowData = [];
+  defaultColDef = {
+    flex: 1,
+    minWidth: 100,
+    filter: true,
+    sortable: true,
+    resizable: true
+  };
+  paginationPageSize = 10;
+  private gridApi;
+  private gridColumnApi;
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/usage-metrics.json').subscribe((data: any) => {
+      this.rowData = data;
+    });
+  }
+
+  onGridReady(params) {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+  }
+
+  onQuickFilterChanged(event) {
+    this.gridApi.setQuickFilter(event.target.value);
+  }
+}
+```
+
+#### JSON Data (`assets/usage-metrics.json`)
+
+```json
+[
+  { "api": "getGlobalVariable", "usageCount": 120, "lastAccessed": "2024-07-25 10:15:00" },
+  { "api": "createGlobalVariable", "usageCount": 80, "lastAccessed": "2024-07-25 11:00:00" },
+  ...
+]
+```
+
+### 5. **Styling**
+
+You can reuse the styles from the `admin-management.component.scss` for the new components or create new styles as needed.
+
+### 6. **Add Sidebar Navigation**
+
+Update your main component or layout to include navigation for the new components.
+
+```html
+<nav>
+  <ul>
+    <li><a routerLink="/admin-management">Admin Management</a></li>
+    <li><a routerLink="/audit-logs">Audit Logs</a></li>
+    <li><a routerLink="/reports">Reports</a></li>
+  </ul>
+</nav>
+<router-outlet></router-outlet>
+```
+
+This setup provides an end-to-end implementation for the smart assistant page with audit logs and reports, including capturing and displaying usage metrics. Adjust the JSON data, column definitions, and styling as necessary to fit your specific use case.
