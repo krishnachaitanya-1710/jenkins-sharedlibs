@@ -1,0 +1,158 @@
+<div class="panel_format">
+  <div class="header-container">
+    <span class="heading">Audit Logs</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+    <ngx-charts-bar-vertical
+      [view]="view"
+      [scheme]="colorScheme"
+      [results]="barChartData"
+      [gradient]="gradient"
+      [xAxis]="showXAxis"
+      [yAxis]="showYAxis"
+      [legend]="showLegend"
+      [showXAxisLabel]="showXAxisLabel"
+      [showYAxisLabel]="showYAxisLabel"
+      [xAxisLabel]="xAxisLabel"
+      [yAxisLabel]="yAxisLabel">
+    </ngx-charts-bar-vertical>
+  </div>
+</div>
+
+  import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-audit-logs',
+  templateUrl: './audit-logs.component.html',
+  styleUrls: ['./audit-logs.component.scss']
+})
+export class AuditLogsComponent implements OnInit {
+  barChartData: any[] = [];
+  view: [number, number] = [700, 400];
+  colorScheme = {
+    domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA']
+  };
+
+  showXAxis = true;
+  showYAxis = true;
+  gradient = false;
+  showLegend = true;
+  showXAxisLabel = true;
+  xAxisLabel = 'Actions';
+  showYAxisLabel = true;
+  yAxisLabel = 'Count';
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/audit-logs.json').subscribe((data: any) => {
+      this.processData(data);
+    });
+  }
+
+  processData(data: any) {
+    const actionCounts = {};
+    data.forEach(log => {
+      if (!actionCounts[log.action]) {
+        actionCounts[log.action] = 0;
+      }
+      actionCounts[log.action]++;
+    });
+
+    this.barChartData = Object.keys(actionCounts).map(key => ({
+      name: key,
+      value: actionCounts[key]
+    }));
+  }
+}
+
+
+
+reports
+
+
+<div class="panel_format">
+  <div class="header-container">
+    <span class="heading">Reports</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+    <ngx-charts-pie-chart
+      [view]="view"
+      [scheme]="colorScheme"
+      [results]="pieChartData"
+      [gradient]="gradient"
+      [legend]="showLegend"
+      [labels]="showLabels"
+      [doughnut]="isDoughnut"
+      [arcWidth]="arcWidth">
+    </ngx-charts-pie-chart>
+  </div>
+</div>
+
+
+
+  import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  pieChartData: any[] = [];
+  view: [number, number] = [700, 400];
+  colorScheme = {
+    domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA']
+  };
+
+  gradient = false;
+  showLegend = true;
+  showLabels = true;
+  isDoughnut = false;
+  arcWidth = 0.25;
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/usage-metrics.json').subscribe((data: any) => {
+      this.processData(data);
+    });
+  }
+
+  processData(data: any) {
+    this.pieChartData = data.map(metric => ({
+      name: metric.api,
+      value: metric.usageCount
+    }));
+  }
+}
+
+
+
+.panel_format {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.search-input {
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
