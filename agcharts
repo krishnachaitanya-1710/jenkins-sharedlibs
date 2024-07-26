@@ -1,0 +1,239 @@
+Yes, `ag-Charts` can be used to create the visualizations for your audit logs and reports. Here’s a step-by-step guide to set up the components for audit logs and reports using `ag-Charts`.
+
+### Step 1: Install `ag-Charts`
+
+If you haven't installed `ag-Charts` already, install it using npm:
+
+```bash
+npm install --save ag-charts-community ag-charts-angular
+```
+
+### Step 2: Import `AgChartsAngularModule` in `AppModule`
+
+Update your `app.module.ts` to include `AgChartsAngularModule`:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { AdminManagementComponent } from './admin-management/admin-management.component';
+import { AuditLogsComponent } from './audit-logs/audit-logs.component';
+import { ReportsComponent } from './reports/reports.component';
+import { AgChartsAngularModule } from 'ag-charts-angular';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    AdminManagementComponent,
+    AuditLogsComponent,
+    ReportsComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    AgChartsAngularModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### 3. **Audit Logs Component**
+
+#### HTML (`audit-logs.component.html`)
+
+```html
+<div class="panel_format">
+  <div class="header-container">
+    <span class="heading">Audit Logs</span>
+  </div>
+  <ag-charts-angular
+    [options]="barChartOptions"
+    style="width: 100%; height: 600px;">
+  </ag-charts-angular>
+</div>
+```
+
+#### TypeScript (`audit-logs.component.ts`)
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-audit-logs',
+  templateUrl: './audit-logs.component.html',
+  styleUrls: ['./audit-logs.component.scss']
+})
+export class AuditLogsComponent implements OnInit {
+  barChartOptions: any;
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/audit-logs.json').subscribe((data: any) => {
+      this.processData(data);
+    });
+  }
+
+  processData(data: any) {
+    const actionCounts = {};
+    data.forEach(log => {
+      if (!actionCounts[log.action]) {
+        actionCounts[log.action] = 0;
+      }
+      actionCounts[log.action]++;
+    });
+
+    const chartData = Object.keys(actionCounts).map(key => ({
+      category: key,
+      count: actionCounts[key]
+    }));
+
+    this.barChartOptions = {
+      data: chartData,
+      series: [
+        {
+          type: 'column',
+          xKey: 'category',
+          yKey: 'count',
+          yName: 'Count'
+        }
+      ],
+      legend: {
+        enabled: true
+      },
+      axes: [
+        {
+          type: 'category',
+          position: 'bottom',
+          title: { text: 'Actions' }
+        },
+        {
+          type: 'number',
+          position: 'left',
+          title: { text: 'Count' }
+        }
+      ]
+    };
+  }
+}
+```
+
+### 4. **Reports Component**
+
+#### HTML (`reports.component.html`)
+
+```html
+<div class="panel_format">
+  <div class="header-container">
+    <span class="heading">Reports</span>
+  </div>
+  <ag-charts-angular
+    [options]="pieChartOptions"
+    style="width: 100%; height: 600px;">
+  </ag-charts-angular>
+</div>
+```
+
+#### TypeScript (`reports.component.ts`)
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  pieChartOptions: any;
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/usage-metrics.json').subscribe((data: any) => {
+      this.processData(data);
+    });
+  }
+
+  processData(data: any) {
+    const chartData = data.map(metric => ({
+      api: metric.api,
+      count: metric.usageCount
+    }));
+
+    this.pieChartOptions = {
+      data: chartData,
+      series: [
+        {
+          type: 'pie',
+          angleKey: 'count',
+          labelKey: 'api',
+          calloutLabelKey: 'api',
+          calloutLineLength: 30,
+          calloutLength: 10,
+          title: { text: 'API Usage' }
+        }
+      ],
+      legend: {
+        enabled: true
+      }
+    };
+  }
+}
+```
+
+### Step 5: Update Styles
+
+You can reuse the styles from the `admin-management.component.scss` for the new components or create new styles as needed:
+
+```scss
+.panel_format {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.search-input {
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+```
+
+### 6. **Add Sidebar Navigation**
+
+Update your main component or layout to include navigation for the new components.
+
+```html
+<nav>
+  <ul>
+    <li><a routerLink="/admin-management">Admin Management</a></li>
+    <li><a routerLink="/audit-logs">Audit Logs</a></li>
+    <li><a routerLink="/reports">Reports</a></li>
+  </ul>
+</nav>
+<router-outlet></router-outlet>
+```
+
+This setup provides an engaging and visually appealing dashboard with audit logs and reports visualized using `ag-Charts`. Adjust the JSON data, chart settings, and styles as necessary to fit your specific use case.
