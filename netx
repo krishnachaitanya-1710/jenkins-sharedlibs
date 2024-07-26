@@ -1,0 +1,226 @@
+If you don't have access to `ngx-charts`, you can use other libraries like `chart.js` with `ng2-charts` for creating charts in Angular. Here’s a step-by-step guide to set up the components for audit logs and reports with chart visualizations using `ng2-charts`.
+
+### Step 1: Install `chart.js` and `ng2-charts`
+
+```bash
+npm install chart.js --save
+npm install ng2-charts --save
+```
+
+### Step 2: Import `ChartsModule` in `AppModule`
+
+Update your `app.module.ts` to include `ChartsModule`:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { AdminManagementComponent } from './admin-management/admin-management.component';
+import { AuditLogsComponent } from './audit-logs/audit-logs.component';
+import { ReportsComponent } from './reports/reports.component';
+import { ChartsModule } from 'ng2-charts';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    AdminManagementComponent,
+    AuditLogsComponent,
+    ReportsComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    ChartsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### 3. **Audit Logs Component**
+
+#### HTML (`audit-logs.component.html`)
+
+```html
+<div class="panel_format">
+  <div class="header-container">
+    <span class="heading">Audit Logs</span>
+  </div>
+  <div style="width: 100%; max-width: 700px; margin: auto;">
+    <canvas baseChart
+      [datasets]="barChartData"
+      [labels]="barChartLabels"
+      [options]="barChartOptions"
+      [colors]="barChartColors"
+      [legend]="barChartLegend"
+      [chartType]="barChartType">
+    </canvas>
+  </div>
+</div>
+```
+
+#### TypeScript (`audit-logs.component.ts`)
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ChartOptions, ChartType, ChartDataSets } from 'chart.js';
+import { Label, Color } from 'ng2-charts';
+
+@Component({
+  selector: 'app-audit-logs',
+  templateUrl: './audit-logs.component.html',
+  styleUrls: ['./audit-logs.component.scss']
+})
+export class AuditLogsComponent implements OnInit {
+  barChartOptions: ChartOptions = {
+    responsive: true,
+  };
+  barChartLabels: Label[] = [];
+  barChartType: ChartType = 'bar';
+  barChartLegend = true;
+  barChartPlugins = [];
+  barChartData: ChartDataSets[] = [
+    { data: [], label: 'Actions' }
+  ];
+  barChartColors: Color[] = [
+    { backgroundColor: 'rgba(30, 169, 224, 0.8)' }
+  ];
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/audit-logs.json').subscribe((data: any) => {
+      this.processData(data);
+    });
+  }
+
+  processData(data: any) {
+    const actionCounts = {};
+    data.forEach(log => {
+      if (!actionCounts[log.action]) {
+        actionCounts[log.action] = 0;
+      }
+      actionCounts[log.action]++;
+    });
+
+    this.barChartLabels = Object.keys(actionCounts);
+    this.barChartData[0].data = Object.values(actionCounts);
+  }
+}
+```
+
+### 4. **Reports Component**
+
+#### HTML (`reports.component.html`)
+
+```html
+<div class="panel_format">
+  <div class="header-container">
+    <span class="heading">Reports</span>
+  </div>
+  <div style="width: 100%; max-width: 700px; margin: auto;">
+    <canvas baseChart
+      [data]="pieChartData"
+      [labels]="pieChartLabels"
+      [chartType]="pieChartType"
+      [colors]="pieChartColors"
+      [options]="pieChartOptions">
+    </canvas>
+  </div>
+</div>
+```
+
+#### TypeScript (`reports.component.ts`)
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ChartType, ChartOptions } from 'chart.js';
+import { Label, SingleDataSet, Color } from 'ng2-charts';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  pieChartOptions: ChartOptions = {
+    responsive: true,
+  };
+  pieChartLabels: Label[] = [];
+  pieChartData: SingleDataSet = [];
+  pieChartType: ChartType = 'pie';
+  pieChartLegend = true;
+  pieChartPlugins = [];
+  pieChartColors: Color[] = [
+    { backgroundColor: ['#FF7360', '#6FC8CE', '#FAFFF2', '#FFFCC4', '#B9E8E0'] }
+  ];
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.http.get('assets/usage-metrics.json').subscribe((data: any) => {
+      this.processData(data);
+    });
+  }
+
+  processData(data: any) {
+    this.pieChartLabels = data.map(metric => metric.api);
+    this.pieChartData = data.map(metric => metric.usageCount);
+  }
+}
+```
+
+### Step 5: Update Styles
+
+You can reuse the styles from the `admin-management.component.scss` for the new components or create new styles as needed:
+
+```scss
+.panel_format {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.search-input {
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+```
+
+### 6. **Add Sidebar Navigation**
+
+Update your main component or layout to include navigation for the new components.
+
+```html
+<nav>
+  <ul>
+    <li><a routerLink="/admin-management">Admin Management</a></li>
+    <li><a routerLink="/audit-logs">Audit Logs</a></li>
+    <li><a routerLink="/reports">Reports</a></li>
+  </ul>
+</nav>
+<router-outlet></router-outlet>
+```
+
+This setup provides an engaging and visually appealing dashboard with audit logs and reports visualized using bar and pie charts. Adjust the JSON data, chart settings, and styles as necessary to fit your specific use case.
