@@ -1,3 +1,7 @@
+npm install @swimlane/ngx-charts --save
+npm install d3 --save
+
+
 <div class="panel_format">
   <div class="header-container">
     <span class="heading">Audit Logs</span>
