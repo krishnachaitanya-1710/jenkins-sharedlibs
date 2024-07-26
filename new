@@ -1,0 +1,188 @@
+To match the layout and styling of the icons and buttons as shown in your first picture, you can modify the existing HTML and CSS. Here's how you can achieve a similar look:
+
+### Step 1: Update HTML for Header Container
+
+Update the `admin-management.component.html` to include the concise/classic toggle, add buttons, and a search input as shown in your screenshot.
+
+```html
+<div class="panel_format table_container" style="height:calc(100vh - 170px);">
+  <div class="header-container">
+    <span class="heading">Smart Assistant Admin Dashboard</span>
+    <div class="button-group">
+      <div class="toggle-switch">
+        <button class="toggle-button">Concise</button>
+        <button class="toggle-button">Classic</button>
+      </div>
+      <button class="icon-button"><i class="fa fa-plus"></i></button>
+      <button class="icon-button"><i class="fa fa-refresh"></i></button>
+      <button class="icon-button"><i class="fa fa-copy"></i></button>
+      <button class="icon-button"><i class="fa fa-file"></i></button>
+      <input class="search-input" type="search" placeholder="Search...">
+    </div>
+  </div>
+  <ag-grid-angular
+    id="ViewSummaryTbl"
+    style="width: 100%; height: 660px;"
+    class="ag-theme-balham custom-ag-theme"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [sideBar]="sideBar"
+    [enableRangeSelection]="true"
+    [enableCharts]="true"
+    [animateRows]="true"
+    [pagination]="true"
+    [paginationPageSize]="paginationPageSize"
+    [getRowStyle]="getRowStyle">
+  </ag-grid-angular>
+</div>
+```
+
+### Step 2: Update CSS for Styling
+
+Update the `admin-management.component.scss` with the styles for the new layout and buttons.
+
+```scss
+.panel_format.table_container {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.toggle-button {
+  background: #007bff;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  margin: 0 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toggle-button:hover {
+  background: #0056b3;
+}
+
+.icon-button {
+  background: #007bff;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  margin-right: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.icon-button i {
+  font-size: 1rem;
+}
+
+.icon-button:hover {
+  background: #0056b3;
+}
+
+.search-input {
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.custom-ag-theme .ag-header-cell-label {
+  font-weight: bold;
+  font-size: 16px; /* Adjust the size as needed */
+  padding: 10px 15px; /* Adjust padding for more spacing */
+}
+
+.bold-header {
+  font-weight: bold;
+  font-size: 16px; /* Adjust the size as needed */
+  padding: 10px 15px; /* Adjust padding for more spacing */
+}
+
+.custom-ag-theme .ag-cell {
+  font-size: 14px; /* Adjust the font size as needed */
+  padding: 8px 15px; /* Adjust padding for more spacing */
+}
+
+.custom-ag-theme .ag-row:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.custom-ag-theme .ag-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.custom-ag-theme .ag-paging-panel {
+  font-size: 14px; /* Adjust the font size for pagination controls */
+  padding: 10px 15px; /* Adjust padding for pagination controls */
+}
+
+.dropdown {
+  display: inline-block;
+}
+
+.dropdown-menu {
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.dropdown-item {
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+}
+```
+
+### Step 3: Ensure FontAwesome is Included
+
+Ensure that FontAwesome is included in your project for the icons to work. You can add it in your `index.html` or install it via npm.
+
+```html
+<!-- Add this in your index.html -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+```
+
+or
+
+```bash
+npm install @fortawesome/fontawesome-free
+```
+
+Then include it in your `angular.json`:
+
+```json
+"styles": [
+  "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+  "src/styles.scss"
+],
+```
+
+This should provide you with the layout, spacing, and icons as shown in your first screenshot. Adjust the styles as needed to match exactly.
