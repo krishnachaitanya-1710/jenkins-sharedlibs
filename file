@@ -1,0 +1,156 @@
+It's generally better to have separate APIs for onboarding a new service and onboarding a new API. This separation of concerns makes your system more modular and easier to manage. Here’s how you can modify your code to handle both cases:
+
+### Extend Existing Service Logic to Add New API
+
+If you decide to handle both cases in one API, you can modify the existing method as follows:
+
+```java
+public void onboardApi(SmartAssistantApiBody newApi) throws Exception {
+    // Fetch the existing config from S3
+    String configFilePath = "path/to/config.json";
+    byte[] jsonData = s3Client.getObject(configFilePath);
+    String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+
+    // Parse the existing config
+    ObjectMapper objectMapper = new ObjectMapper();
+    SmartAssistantApiResponse response = objectMapper.readValue(jsonContent, SmartAssistantApiResponse.class);
+
+    // Find the service and add the new API
+    boolean serviceExists = response.getServices().stream()
+            .anyMatch(service -> newApi.getServiceName().equals(service.getName()));
+
+    if (serviceExists) {
+        response.getServices().stream()
+                .filter(service -> newApi.getServiceName().equals(service.getName()))
+                .findFirst()
+                .ifPresent(service -> service.getApis().add(newApi));
+    } else {
+        // Create a new service and add the new API
+        SmartAssistantApiResponse.Service newService = new SmartAssistantApiResponse.Service();
+        newService.setName(newApi.getServiceName());
+        newService.setApis(new ArrayList<>());
+        newService.getApis().add(newApi);
+        response.getServices().add(newService);
+    }
+
+    // Serialize the updated config back to JSON
+    String updatedJsonContent = objectMapper.writeValueAsString(response);
+
+    // Upload the updated config back to S3
+    s3Client.putObject(configFilePath, updatedJsonContent.getBytes(StandardCharsets.UTF_8));
+}
+```
+
+### Separate APIs for Onboarding a Service and an API
+
+If you prefer separate APIs, you can define two methods in your controller and service:
+
+#### Controller
+
+```java
+@RestController
+@RequestMapping("/v1/admin/smartassistant")
+public class SmartAssistantController {
+
+    @PostMapping("/onboardApi")
+    public ResponseEntity<String> onboardApi(@RequestBody SmartAssistantApiBody newApi) {
+        try {
+            smartAssistantService.onboardApi(newApi);
+            return ResponseEntity.ok("API onboarded successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error onboarding API: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/onboardService")
+    public ResponseEntity<String> onboardService(@RequestBody SmartAssistantServiceBody newService) {
+        try {
+            smartAssistantService.onboardService(newService);
+            return ResponseEntity.ok("Service onboarded successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error onboarding service: " + e.getMessage());
+        }
+    }
+}
+```
+
+#### Service
+
+```java
+@Service
+public class SmartAssistantService {
+
+    @Autowired
+    private S3Client s3Client;
+
+    public void onboardApi(SmartAssistantApiBody newApi) throws Exception {
+        // Fetch the existing config from S3
+        String configFilePath = "path/to/config.json";
+        byte[] jsonData = s3Client.getObject(configFilePath);
+        String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+
+        // Parse the existing config
+        ObjectMapper objectMapper = new ObjectMapper();
+        SmartAssistantApiResponse response = objectMapper.readValue(jsonContent, SmartAssistantApiResponse.class);
+
+        // Find the service and add the new API
+        response.getServices().stream()
+                .filter(service -> newApi.getServiceName().equals(service.getName()))
+                .findFirst()
+                .ifPresent(service -> service.getApis().add(newApi));
+
+        // Serialize the updated config back to JSON
+        String updatedJsonContent = objectMapper.writeValueAsString(response);
+
+        // Upload the updated config back to S3
+        s3Client.putObject(configFilePath, updatedJsonContent.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public void onboardService(SmartAssistantServiceBody newService) throws Exception {
+        // Fetch the existing config from S3
+        String configFilePath = "path/to/config.json";
+        byte[] jsonData = s3Client.getObject(configFilePath);
+        String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+
+        // Parse the existing config
+        ObjectMapper objectMapper = new ObjectMapper();
+        SmartAssistantApiResponse response = objectMapper.readValue(jsonContent, SmartAssistantApiResponse.class);
+
+        // Add the new service
+        SmartAssistantApiResponse.Service service = new SmartAssistantApiResponse.Service();
+        service.setName(newService.getServiceName());
+        service.setApis(new ArrayList<>());
+        response.getServices().add(service);
+
+        // Serialize the updated config back to JSON
+        String updatedJsonContent = objectMapper.writeValueAsString(response);
+
+        // Upload the updated config back to S3
+        s3Client.putObject(configFilePath, updatedJsonContent.getBytes(StandardCharsets.UTF_8));
+    }
+}
+```
+
+### DTO for Service
+
+```java
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+public class SmartAssistantServiceBody {
+    private String serviceName;
+}
+```
+
+With this setup, you can easily manage both onboarding new APIs and services, ensuring your configuration stays modular and maintainable.
