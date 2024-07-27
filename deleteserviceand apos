@@ -1,0 +1,54 @@
+// In SmartAssistantService.java
+
+public List<String> deleteService(String serviceName) throws Exception {
+    // Fetch the existing config from S3
+    String configFilePath = "path/to/config.json";
+    byte[] jsonData = s3Client.getObject(configFilePath);
+    String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+
+    // Parse the existing config
+    ObjectMapper objectMapper = new ObjectMapper();
+    SmartAssistantApiResponse response = objectMapper.readValue(jsonContent, SmartAssistantApiResponse.class);
+
+    // Remove the service
+    response.getServices().removeIf(service -> serviceName.equals(service.getName()));
+
+    // Serialize the updated config back to JSON
+    String updatedJsonContent = objectMapper.writeValueAsString(response);
+
+    // Upload the updated config back to S3
+    s3Client.putObject(configFilePath, updatedJsonContent.getBytes(StandardCharsets.UTF_8));
+
+    // Return the list of service names
+    return response.getServices().stream()
+                    .map(SmartAssistantApiResponse.Service::getName)
+                    .collect(Collectors.toList());
+}
+
+public List<String> deleteApi(String serviceName, String apiName) throws Exception {
+    // Fetch the existing config from S3
+    String configFilePath = "path/to/config.json";
+    byte[] jsonData = s3Client.getObject(configFilePath);
+    String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+
+    // Parse the existing config
+    ObjectMapper objectMapper = new ObjectMapper();
+    SmartAssistantApiResponse response = objectMapper.readValue(jsonContent, SmartAssistantApiResponse.class);
+
+    // Find the service and remove the API
+    response.getServices().stream()
+            .filter(service -> serviceName.equals(service.getName()))
+            .findFirst()
+            .ifPresent(service -> service.getApis().removeIf(api -> apiName.equals(api.getName())));
+
+    // Serialize the updated config back to JSON
+    String updatedJsonContent = objectMapper.writeValueAsString(response);
+
+    // Upload the updated config back to S3
+    s3Client.putObject(configFilePath, updatedJsonContent.getBytes(StandardCharsets.UTF_8));
+
+    // Return the list of service names
+    return response.getServices().stream()
+                    .map(SmartAssistantApiResponse.Service::getName)
+                    .collect(Collectors.toList());
+}
