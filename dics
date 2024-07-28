@@ -104,6 +104,55 @@ public class DocumentationResponse {
     }
 }
 ```
+@PutMapping("/updateDocumentation")
+public ResponseEntity<String> updateDocumentation(@RequestBody DocumentationRequest request) throws Exception {
+    // Fetch the existing config from S3
+    String configFilePath = "path/to/config.json";
+    byte[] jsonData = s3Client.getObject(configFilePath);
+    String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+
+    // Parse the existing config
+    ObjectMapper objectMapper = new ObjectMapper();
+    DocumentationResponse response = objectMapper.readValue(jsonContent, DocumentationResponse.class);
+
+    response.getDocumentations().stream()
+            .filter(doc -> doc.getContexts().containsAll(request.getContexts()))
+            .findFirst()
+            .ifPresent(doc -> {
+                doc.setDocumentName(request.getDocumentName());
+                doc.setDocLink(request.getDocLink());
+            });
+
+    // Serialize the updated config back to JSON
+    String updatedJsonContent = objectMapper.writeValueAsString(response);
+
+    // Upload the updated config back to S3
+    s3Client.putObject(configFilePath, updatedJsonContent.getBytes(StandardCharsets.UTF_8));
+
+    return ResponseEntity.ok("Documentation updated successfully");
+}
+
+@DeleteMapping("/deleteDocumentation")
+public ResponseEntity<String> deleteDocumentation(@RequestParam List<String> contexts) throws Exception {
+    // Fetch the existing config from S3
+    String configFilePath = "path/to/config.json";
+    byte[] jsonData = s3Client.getObject(configFilePath);
+    String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+
+    // Parse the existing config
+    ObjectMapper objectMapper = new ObjectMapper();
+    DocumentationResponse response = objectMapper.readValue(jsonContent, DocumentationResponse.class);
+
+    response.getDocumentations().removeIf(doc -> doc.getContexts().containsAll(contexts));
+
+    // Serialize the updated config back to JSON
+    String updatedJsonContent = objectMapper.writeValueAsString(response);
+
+    // Upload the updated config back to S3
+    s3Client.putObject(configFilePath, updatedJsonContent.getBytes(StandardCharsets.UTF_8));
+
+    return ResponseEntity.ok("Documentation deleted successfully");
+}
 
 ### Dependencies
 
