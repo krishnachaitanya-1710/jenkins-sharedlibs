@@ -1,0 +1,30 @@
+Sure, here's a clearer and more structured response to the issue reported by the DSO Customer Care team:
+
+---
+
+Dear DSO Customer Care Team,
+
+Thank you for bringing this issue to our attention. Based on your report, the pipeline is failing because it is invoking the Lambda update feature, which the Application Development (AD) team does not intend to use.
+
+The application in question is currently onboarded with the `javamavens3` use case. By default, this use case is designed to support both S3 upload and Lambda update functionalities. If the AD team only wants to use the S3 upload feature and not the Lambda update, the application needs to be onboarded with a use case that specifically supports only the S3 upload feature.
+
+Here are the steps we need to consider:
+
+1. **Check for Existing S3 Upload Use Case:**
+   - We need to verify if there is an existing use case that supports only S3 upload without the Lambda update feature. If such a use case exists, the AD team will need to change the use case template from `javamavens3` (which supports both S3 upload and Lambda update) to the use case that only supports S3 upload.
+
+2. **Create a New Use Case (if needed):**
+   - If there is no existing use case that supports only the S3 upload feature, we will need to create a new use case and onboard it to the SSP (Self-Service Platform).
+   - Once the new use case is available, the AD team will need to update the application configuration to use this new use case that supports only the S3 upload functionality.
+
+Please confirm if there is already an available use case for S3 upload only. If not, we will proceed with creating a new use case and updating the application configuration accordingly.
+
+Thank you for your cooperation and understanding. 
+
+Best regards,
+[Your Name]
+[Your Position]
+
+---
+
+Feel free to modify or add any specific details as needed.
