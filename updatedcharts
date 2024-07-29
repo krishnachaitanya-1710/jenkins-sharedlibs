@@ -1,0 +1,188 @@
+Let's enhance the reports component to show both tabular data and graphical charts to showcase the number of questions asked and API usage insights.
+
+### Step 1: Update the Reports Component
+
+**reports.component.ts**
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ChartOptions, ChartType } from 'chart.js';
+import { Label, SingleDataSet } from 'ng2-charts';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  columnDefs = [
+    { headerName: 'Session ID', field: 'sessionId', sortable: true, filter: true },
+    { headerName: 'Employee ID', field: 'employeeId', sortable: true, filter: true },
+    { headerName: 'LAN ID', field: 'lanId', sortable: true, filter: true },
+    { headerName: 'Questions Asked', field: 'questionsAsked', sortable: true, filter: true },
+    { headerName: 'Creation Date', field: 'creationDatetime', sortable: true, filter: true },
+    { headerName: 'Update Date', field: 'updationDatetime', sortable: true, filter: true }
+  ];
+
+  rowData: any = [];
+  questionData: SingleDataSet = [];
+  questionLabels: Label[] = [];
+  apiUsageData: SingleDataSet = [];
+  apiUsageLabels: Label[] = [];
+
+  pieChartOptions: ChartOptions = {
+    responsive: true,
+  };
+  pieChartType: ChartType = 'pie';
+  pieChartLegend = true;
+  pieChartPlugins = [];
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.http.get<any[]>('YOUR_API_ENDPOINT').subscribe(data => {
+      this.rowData = data;
+      this.processChartData(data);
+    });
+  }
+
+  getRowStyle(params) {
+    return { 'background-color': params.node.rowIndex % 2 === 0 ? '#f3f3f3' : 'white' };
+  }
+
+  processChartData(data: any[]) {
+    const questionMap = new Map<string, number>();
+    const apiUsageMap = new Map<string, number>();
+
+    data.forEach(item => {
+      item.questionsAsked.forEach(question => {
+        questionMap.set(question, (questionMap.get(question) || 0) + 1);
+      });
+      apiUsageMap.set(item.apiName, (apiUsageMap.get(item.apiName) || 0) + 1);
+    });
+
+    this.questionLabels = Array.from(questionMap.keys());
+    this.questionData = Array.from(questionMap.values());
+    this.apiUsageLabels = Array.from(apiUsageMap.keys());
+    this.apiUsageData = Array.from(apiUsageMap.values());
+  }
+}
+```
+
+**reports.component.html**
+```html
+<div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+  <div style="width: 45%; margin-bottom: 20px;">
+    <h3>Questions Asked</h3>
+    <canvas baseChart
+            [datasets]="[{ data: questionData }]"
+            [labels]="questionLabels"
+            [options]="pieChartOptions"
+            [chartType]="pieChartType"
+            [legend]="pieChartLegend"
+            [plugins]="pieChartPlugins">
+    </canvas>
+  </div>
+  
+  <div style="width: 45%; margin-bottom: 20px;">
+    <h3>API Usage</h3>
+    <canvas baseChart
+            [datasets]="[{ data: apiUsageData }]"
+            [labels]="apiUsageLabels"
+            [options]="pieChartOptions"
+            [chartType]="pieChartType"
+            [legend]="pieChartLegend"
+            [plugins]="pieChartPlugins">
+    </canvas>
+  </div>
+</div>
+
+<ag-grid-angular
+  style="width: 100%; height: 600px;"
+  class="ag-theme-alpine"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="{ flex: 1, minWidth: 100, resizable: true }"
+  [pagination]="true"
+  [paginationPageSize]="10"
+  [rowStyle]="getRowStyle">
+</ag-grid-angular>
+```
+
+**reports.component.scss**
+```scss
+.ag-theme-alpine {
+  height: 100%;
+  width: 100%;
+}
+
+.chart-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+```
+
+### Step 2: Backend API Endpoint
+
+Update the backend to provide the required data structure.
+
+**audit-log.controller.ts**
+```typescript
+import { Controller, Get } from '@nestjs/common';
+
+@Controller('audit-log')
+export class AuditLogController {
+  @Get()
+  getAuditLogs() {
+    return [
+      {
+        sessionId: '12345',
+        employeeId: '67890',
+        lanId: 'abcde',
+        questionsAsked: ['How to reset password?', 'How to apply leave?'],
+        apiName: 'getGlobalVariable',
+        creationDatetime: new Date(),
+        updationDatetime: new Date()
+      },
+      // Add more sample data
+    ];
+  }
+}
+```
+
+### Step 3: Add the Component to App Module
+
+Ensure to declare the `ReportsComponent` in your app module.
+
+**app.module.ts**
+```typescript
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+import { AgGridModule } from 'ag-grid-angular';
+import { ChartsModule } from 'ng2-charts';
+
+import { AppComponent } from './app.component';
+import { ReportsComponent } from './reports/reports.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    ReportsComponent
+  ],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    AgGridModule.withComponents([]),
+    ChartsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### Summary
+
+This setup will meet the documented requirements by providing an audit log and a reports component. The audit log uses ag-Grid to display detailed data, and the reports component uses charts to visualize data insights, such as the number of questions asked and the number of users asking questions. This component now showcases graphical and tabular data to provide a comprehensive view of the Smart Assistant's usage and API usage insights.
