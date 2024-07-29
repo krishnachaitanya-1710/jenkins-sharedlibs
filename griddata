@@ -1,0 +1,27 @@
+.ag-theme-alpine {
+  height: 100%;
+  width: 100%;
+}
+
+.ag-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-cell-expandable {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ag-cell-expandable:hover {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.ag-cell:hover {
+  overflow: visible;
+  text-overflow: clip;
+}
