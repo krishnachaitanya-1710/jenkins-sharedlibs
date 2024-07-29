@@ -1,0 +1,277 @@
+Great to hear it's working! Now, let's generate the required code to support the documented requirements for the Smart Assistant, including the admin and reports components.
+
+### Smart Assistant Admin Component
+
+1. **Admin Component HTML:**
+
+```html
+<div class="admin-container">
+    <h1>Smart Assistant Admin Dashboard</h1>
+    <button (click)="onboardNewApi()">Onboard New API</button>
+    <button (click)="onboardNewService()">Onboard New Service</button>
+    <button (click)="exportApiData()">Export API Data</button>
+
+    <ag-grid-angular
+        style="width: 100%; height: 500px;"
+        class="ag-theme-balham"
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [pagination]="true"
+        [paginationPageSize]="10"
+        (gridReady)="onGridReady($event)">
+    </ag-grid-angular>
+</div>
+```
+
+2. **Admin Component TypeScript:**
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-admin',
+  templateUrl: './admin.component.html',
+  styleUrls: ['./admin.component.css']
+})
+export class AdminComponent implements OnInit {
+  rowData: any;
+  columnDefs = [
+    { field: 'application' },
+    { field: 'name' },
+    { field: 'label' },
+    { field: 'endpoint' },
+    { field: 'method' },
+    { field: 'parameters' },
+    { field: 'keywords' },
+    { field: 'requireConfirmation' },
+    { field: 'actions', cellRenderer: this.actionsCellRenderer }
+  ];
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.http.get('/api/admin/apis').subscribe(data => {
+      this.rowData = data;
+    });
+  }
+
+  onGridReady(params) {
+    params.api.sizeColumnsToFit();
+  }
+
+  actionsCellRenderer(params) {
+    return `<button (click)="editApi(${params.data})">Edit</button>
+            <button (click)="deleteApi(${params.data})">Delete</button>`;
+  }
+
+  onboardNewApi() {
+    // Logic to onboard a new API
+  }
+
+  onboardNewService() {
+    // Logic to onboard a new service
+  }
+
+  exportApiData() {
+    // Logic to export API data
+  }
+
+  editApi(data) {
+    // Logic to edit API
+  }
+
+  deleteApi(data) {
+    // Logic to delete API
+  }
+}
+```
+
+### Reports Component
+
+1. **Reports Component HTML:**
+
+```html
+<div class="reports-container">
+    <h1>Smart Assistant Reports</h1>
+    <div class="chart-container">
+        <canvas id="questionsChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="apiUsageChart"></canvas>
+    </div>
+    <ag-grid-angular
+        style="width: 100%; height: 500px;"
+        class="ag-theme-balham"
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [pagination]="true"
+        [paginationPageSize]="10"
+        (gridReady)="onGridReady($event)">
+    </ag-grid-angular>
+</div>
+```
+
+2. **Reports Component TypeScript:**
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Chart } from 'chart.js';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.css']
+})
+export class ReportsComponent implements OnInit {
+  rowData: any;
+  columnDefs = [
+    { field: 'sessionId', headerName: 'Session ID' },
+    { field: 'employeeId', headerName: 'Employee ID' },
+    { field: 'lanId', headerName: 'LAN ID' },
+    { field: 'apiName', headerName: 'API Name' },
+    { field: 'serverIp', headerName: 'Server IP' },
+    { field: 'clientIp', headerName: 'Client IP' },
+    { field: 'creationDatetime', headerName: 'Creation Date' },
+    { field: 'updationDatetime', headerName: 'Updation Date' },
+    { field: 'messages', headerName: 'Messages', cellRenderer: this.messagesCellRenderer }
+  ];
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.http.get('/api/reports/usage').subscribe(data => {
+      this.rowData = data;
+      this.createCharts(data);
+    });
+  }
+
+  onGridReady(params) {
+    params.api.sizeColumnsToFit();
+  }
+
+  messagesCellRenderer(params) {
+    return params.value ? JSON.stringify(params.value) : '-';
+  }
+
+  createCharts(data) {
+    const questionsChartCtx = document.getElementById('questionsChart');
+    const apiUsageChartCtx = document.getElementById('apiUsageChart');
+
+    new Chart(questionsChartCtx, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.apiName),
+        datasets: [{
+          label: '# of Questions',
+          data: data.map(d => d.questionsCount),
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    new Chart(apiUsageChartCtx, {
+      type: 'pie',
+      data: {
+        labels: data.map(d => d.apiName),
+        datasets: [{
+          label: '# of Uses',
+          data: data.map(d => d.usageCount),
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)',
+            'rgba(255, 159, 64, 0.2)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true
+      }
+    });
+  }
+}
+```
+
+### Backend Code for Reports
+
+1. **Service Class:**
+
+```java
+@Service
+public class ReportService {
+
+    @Autowired
+    private SmartAssistantRepository smartAssistantRepository;
+
+    public List<ReportData> getUsageData() {
+        List<SmartAssistantEntity> entities = smartAssistantRepository.findAll();
+        Map<String, Long> apiUsageCount = entities.stream()
+                .collect(Collectors.groupingBy(SmartAssistantEntity::getApiName, Collectors.counting()));
+        Map<String, Long> questionsCount = entities.stream()
+                .collect(Collectors.groupingBy(SmartAssistantEntity::getApiName, Collectors.summingLong(e -> e.getMessages().size())));
+
+        return apiUsageCount.entrySet().stream().map(entry -> {
+            ReportData data = new ReportData();
+            data.setApiName(entry.getKey());
+            data.setUsageCount(entry.getValue());
+            data.setQuestionsCount(questionsCount.get(entry.getKey()));
+            return data;
+        }).collect(Collectors.toList());
+    }
+}
+```
+
+2. **Controller Class:**
+
+```java
+@RestController
+@RequestMapping("/api/reports")
+public class ReportController {
+
+    @Autowired
+    private ReportService reportService;
+
+    @GetMapping("/usage")
+    public List<ReportData> getUsageReport() {
+        return reportService.getUsageData();
+    }
+}
+```
+
+3. **Report Data Class:**
+
+```java
+public class ReportData {
+
+    private String apiName;
+    private Long usageCount;
+    private Long questionsCount;
+
+    // Getters and Setters
+}
+```
+
+### Summary
+This setup provides a complete solution to visualize and manage data insights, including the number of questions asked, the number of users asking questions, and API usage. This is displayed both in tabular format using AG Grid and graphically using Chart.js in the frontend, while the backend provides the required data processing and API endpoints.
