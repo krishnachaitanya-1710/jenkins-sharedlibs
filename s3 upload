@@ -1,0 +1,19 @@
+Sure, here's a shorter version:
+
+---
+
+Dear DSO Customer Care Team,
+
+Thank you for reporting the issue. The application is currently using the `javamavens3` use case, which supports both S3 upload and Lambda update by default. If the AD team only wants the S3 upload feature, we have two options:
+
+1. **Switch to an Existing Use Case:** If a use case exists that supports only S3 upload, the AD team should switch to that use case.
+2. **Create a New Use Case:** If no such use case exists, we need to create one and update the application's configuration accordingly.
+
+Please confirm if there is an existing use case for S3 upload only, or if we should proceed with creating a new one.
+
+Best regards,  
+[Your Name]
+
+---
+
+Feel free to adjust any details as needed.
