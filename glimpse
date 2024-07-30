@@ -1,0 +1,169 @@
+To implement the functionality for minimize, maximize, and delete actions for your smart assistant chatbox, you need to modify your component's TypeScript and HTML files accordingly. Here is how you can achieve this:
+
+### chatbox.component.ts
+
+```typescript
+import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-chatbox',
+  templateUrl: './chatbox.component.html',
+  styleUrls: ['./chatbox.component.scss']
+})
+export class ChatboxComponent {
+  @ViewChild('chatContainer') chatContainer: ElementRef;
+  isMinimized: boolean = false;
+  isMaximized: boolean = false;
+  isDeleted: boolean = false;
+
+  toggleMinimize() {
+    this.isMinimized = !this.isMinimized;
+  }
+
+  toggleMaximize() {
+    this.isMaximized = !this.isMaximized;
+  }
+
+  deleteChat() {
+    if (confirm('You are going to delete the entire chat history of the session. Are you sure?')) {
+      this.isDeleted = true;
+    }
+  }
+
+  restoreChat() {
+    this.isDeleted = false;
+    this.isMinimized = false;
+    this.isMaximized = false;
+  }
+}
+```
+
+### chatbox.component.html
+
+```html
+<div *ngIf="!isDeleted" class="chatbox-container" [ngClass]="{'minimized': isMinimized, 'maximized': isMaximized}">
+  <div class="chatbox-header">
+    <span>EDSO Smart Assistant</span>
+    <div class="chatbox-actions">
+      <button (click)="toggleMinimize()" *ngIf="!isMinimized">
+        <i class="fa fa-minus"></i>
+      </button>
+      <button (click)="toggleMinimize()" *ngIf="isMinimized">
+        <i class="fa fa-window-restore"></i>
+      </button>
+      <button (click)="toggleMaximize()">
+        <i class="fa fa-expand" *ngIf="!isMaximized"></i>
+        <i class="fa fa-compress" *ngIf="isMaximized"></i>
+      </button>
+      <button (click)="deleteChat()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+  </div>
+  <div class="chatbox-content">
+    <!-- Your chat messages go here -->
+  </div>
+  <div class="chatbox-input">
+    <input type="text" placeholder="Type your message..." />
+    <button (click)="sendMessage()">Send</button>
+  </div>
+</div>
+
+<div *ngIf="isDeleted" class="restore-container">
+  <button (click)="restoreChat()">Restore Chat</button>
+</div>
+```
+
+### chatbox.component.scss
+
+```scss
+.chatbox-container {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 300px;
+  height: 400px;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+
+  &.minimized {
+    height: 50px;
+  }
+
+  &.maximized {
+    width: 90%;
+    height: 90%;
+  }
+}
+
+.chatbox-header {
+  display: flex;
+  justify-content: space-between;
+  background-color: #333;
+  color: white;
+  padding: 10px;
+}
+
+.chatbox-actions button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.chatbox-content {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.chatbox-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+
+  input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+
+  button {
+    margin-left: 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #333;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+}
+
+.restore-container {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #333;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+}
+```
+
+### Summary
+
+- **Minimize**: Clicking the minimize button will reduce the chatbox to a smaller size.
+- **Maximize**: Clicking the maximize button will expand the chatbox to a larger size.
+- **Delete**: Clicking the delete button will hide the chatbox and show a restore button.
+- **Restore**: Clicking the restore button will bring back the chatbox to its initial state.
+
+This setup allows the chatbox to be toggled between minimized, maximized, and hidden states, with appropriate buttons for each action.
