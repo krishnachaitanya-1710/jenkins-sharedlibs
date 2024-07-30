@@ -1,0 +1,11 @@
+The initial design of our automation creation process included the creation of two branches by default: master and release/release_environment. This design was implemented to serve several purposes:
+
+Separation of Concerns: The master branch is utilized by P1 pipelines, while the release/release_environment branch is designated for P2 pipelines. This separation allows us to manage and deploy changes more effectively, ensuring stability in different stages of the pipeline.
+
+Flexibility for Development and Configuration: By having two distinct branches, developers have the flexibility to experiment with application configurations and make necessary adjustments in one branch without affecting the other. This setup is particularly useful when developers need to test new features or configurations in a controlled environment before merging them into the main branch.
+
+Requirement Management: Initially, we received numerous requirements from various applications, necessitating a structure that could accommodate diverse needs and changes. The dual-branch approach provided a robust framework to handle these demands efficiently.
+
+However, as our processes have matured and our requirements have stabilized, we recognize that maintaining two branches may no longer be necessary. Moving forward, we can consider consolidating into a single branch system. This change will simplify the workflow and reduce the complexity of managing multiple branches.
+
+Currently, P2 pipelines are dependent on and restricted to using the release/release_environment branch by default. Any transition to a single-branch system will need to take into account the necessary adjustments to the existing pipelines to ensure a smooth and seamless migration.
