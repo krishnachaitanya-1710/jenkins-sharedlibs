@@ -1,0 +1,60 @@
+Certainly! Here's an IRB (Issue Request and Brief) item to address this:
+
+---
+
+**IRB Item**
+
+### Title: 
+Enhancement of Region Selection for Release Candidates in Cloud Use Cases
+
+### Summary:
+Provide flexibility for developers to select the region while creating release candidates for cloud use cases, such as S3 uploads and Lambda updates. This enhancement aims to allow applications to choose the regions according to their specific use cases instead of defaulting to `us-east-1`.
+
+### Current Situation:
+Currently, the release candidates for cloud use cases default to the `us-east-1` region. This setup limits developers who need to deploy or test their applications in other regions, thus affecting performance and compliance with regional requirements.
+
+### Problem Statement:
+Defaulting to `us-east-1` for all cloud operations does not provide the necessary flexibility for developers. Many applications have region-specific requirements, including latency considerations, compliance, and cost optimization. The lack of region selection flexibility hinders the effective deployment and testing of these applications.
+
+### Proposed Solution:
+Implement a feature that allows developers to specify the AWS region when creating release candidates for cloud use cases. This feature should be integrated into the existing pipeline and user interfaces, providing a seamless selection process for the desired region.
+
+### Benefits:
+1. **Flexibility:** Developers can choose the most appropriate region for their use case.
+2. **Performance Optimization:** Applications can be deployed closer to their user base, reducing latency.
+3. **Compliance:** Meet regional data residency and compliance requirements.
+4. **Cost Management:** Optimize costs by selecting regions with the best pricing for specific services.
+
+### Implementation Plan:
+1. **Requirement Gathering:** Gather specific requirements from the development teams regarding region selection.
+2. **Design:** Update the pipeline design to include a region selection parameter.
+3. **Development:** Modify the scripts and configuration files to support region selection.
+4. **Testing:** Conduct thorough testing to ensure the new feature works across all supported cloud use cases.
+5. **Deployment:** Roll out the feature in stages, starting with a beta group of users, and gather feedback for improvements.
+6. **Documentation:** Update the documentation and provide training sessions for the development teams on how to use the new feature.
+
+### Risks and Mitigations:
+1. **Complexity in Implementation:** Ensure thorough testing and gradual rollout to mitigate any unforeseen issues.
+2. **User Adaptation:** Provide training and clear documentation to ease the transition for developers.
+3. **Region-Specific Issues:** Monitor and address any region-specific issues that may arise post-implementation.
+
+### Timeline:
+- **Requirement Gathering:** 1 week
+- **Design:** 2 weeks
+- **Development:** 3 weeks
+- **Testing:** 2 weeks
+- **Deployment:** 1 week
+- **Documentation and Training:** 1 week
+
+### Responsible Team:
+- **Development Lead:** [Name]
+- **Project Manager:** [Name]
+- **QA Lead:** [Name]
+
+### Approvals:
+- [Name, Title]
+- [Name, Title]
+
+---
+
+Let me know if any adjustments are needed or if there is additional information to include.
