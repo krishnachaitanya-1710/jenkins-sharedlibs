@@ -1,0 +1,129 @@
+Yes, it is possible to move the `MatBottomSheet` component to the shared module as well. Here’s how you can do it:
+
+1. **Create a Shared Module**:
+   Create a new shared module that will contain both the `ChatboxSharedComponent` and the `MatBottomSheet` component.
+
+2. **Export the `MatBottomSheet`**:
+   Export the `MatBottomSheet` component from the shared module.
+
+3. **Use the Shared Module in the Consuming Application**:
+   Import the shared module into the consuming application and use the `MatBottomSheet` from there.
+
+Here’s the step-by-step implementation:
+
+### Step 1: Define the Shared Module
+
+Create a new module for the chatbox component and the `MatBottomSheet` component, e.g., `ChatboxSharedModule`.
+
+```typescript
+// chatbox-shared.module.ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { ChatboxSharedComponent } from './chatbox-shared.component';
+
+@NgModule({
+  declarations: [ChatboxSharedComponent],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatBottomSheetModule
+  ],
+  exports: [ChatboxSharedComponent, MatBottomSheetModule]
+})
+export class ChatboxSharedModule { }
+```
+
+### Step 2: Create Configurable Inputs
+
+Modify the `ChatboxSharedComponent` to accept inputs for customization.
+
+```typescript
+// chatbox-shared.component.ts
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-chatbox-shared',
+  templateUrl: './chatbox-shared.component.html',
+  styleUrls: ['./chatbox-shared.component.css']
+})
+export class ChatboxSharedComponent {
+  @Input() boxColor: string = '#ffffff';
+  @Input() boxWidth: string = '300px';
+  @Input() boxHeight: string = '400px';
+}
+```
+
+Update the template to use these inputs:
+
+```html
+<!-- chatbox-shared.component.html -->
+<div class="chatbox-container" [ngStyle]="{'background-color': boxColor, 'width': boxWidth, 'height': boxHeight}">
+  <!-- Existing chatbox HTML structure -->
+</div>
+```
+
+### Step 3: Use the Module in Other Applications
+
+Import the `ChatboxSharedModule` into the consuming application and use the component.
+
+```typescript
+// app.module.ts (of the consuming application)
+import { ChatboxSharedModule } from 'path-to-chatbox-shared-module';
+
+@NgModule({
+  imports: [
+    ChatboxSharedModule,
+    // other imports
+  ],
+  // other configurations
+})
+export class AppModule { }
+```
+
+Configure the component with inputs:
+
+```html
+<!-- app.component.html (of the consuming application) -->
+<button mat-fab (click)="openBottomSheet($event)">
+  <i class="fa fa-comments"></i>
+</button>
+
+<mat-bottom-sheet-container>
+  <app-chatbox-shared [boxColor]="'#e0f7fa'" [boxWidth]="'400px'" [boxHeight]="'600px'"></app-chatbox-shared>
+</mat-bottom-sheet-container>
+```
+
+Handle the `openBottomSheet` method in the consuming application:
+
+```typescript
+// app.component.ts (of the consuming application)
+import { Component } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { ChatboxSharedComponent } from 'path-to-chatbox-shared-module/chatbox-shared.component';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  constructor(private bottomSheet: MatBottomSheet) { }
+
+  openBottomSheet(event: Event): void {
+    event.preventDefault();
+    this.bottomSheet.open(ChatboxSharedComponent, {
+      data: {
+        boxColor: '#e0f7fa',
+        boxWidth: '400px',
+        boxHeight: '600px'
+      }
+    });
+  }
+}
+```
+
+### Shared Chatbox Module with MatBottomSheet
+
+By following these steps, you can successfully move the `MatBottomSheet` component to the shared module and provide customizable properties for the chatbox component. This allows other applications to easily import and use the chatbox module with their own configurations.
