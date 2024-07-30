@@ -1,0 +1,51 @@
+Sure! Here's a draft email requesting the creation of an IRB item:
+
+---
+
+Subject: Request to Create IRB Item for Enhancing Region Selection in Cloud Use Cases
+
+Hi Piotr,
+
+I hope this email finds you well.
+
+I am writing to request the creation of an IRB item to enhance our current release candidate creation process for cloud use cases, specifically for S3 uploads and Lambda updates. The proposed enhancement aims to provide developers with the flexibility to select the region according to their specific use cases, rather than defaulting to `us-east-1`.
+
+### Current Situation:
+Currently, our process defaults to the `us-east-1` region for all cloud operations. While this setup works for general purposes, it limits developers who need to deploy or test applications in other regions, impacting performance and compliance with regional requirements.
+
+### Proposed Solution:
+We propose implementing a feature that allows developers to specify the AWS region when creating release candidates. This enhancement will be integrated into our existing pipeline and user interfaces, enabling a seamless selection process.
+
+### Benefits:
+- **Flexibility:** Developers can choose the appropriate region for their use case.
+- **Performance Optimization:** Deploy applications closer to their user base, reducing latency.
+- **Compliance:** Meet regional data residency and compliance requirements.
+- **Cost Management:** Optimize costs by selecting regions with the best pricing for specific services.
+
+### Implementation Plan:
+1. **Requirement Gathering:** Collect requirements from development teams.
+2. **Design:** Update pipeline design to include a region selection parameter.
+3. **Development:** Modify scripts and configuration files to support region selection.
+4. **Testing:** Ensure the new feature works across all supported cloud use cases.
+5. **Deployment:** Gradual rollout, starting with a beta group of users.
+6. **Documentation:** Update documentation and provide training sessions.
+
+### Timeline:
+- Requirement Gathering: 1 week
+- Design: 2 weeks
+- Development: 3 weeks
+- Testing: 2 weeks
+- Deployment: 1 week
+- Documentation and Training: 1 week
+
+Could you please create an IRB item for this enhancement? I believe this change will significantly improve our development and deployment processes, providing much-needed flexibility and optimization for our applications.
+
+Thank you for considering this request. Please let me know if you need any additional information.
+
+Best regards,
+
+[Your Name]
+
+---
+
+Feel free to customize this email as needed.
