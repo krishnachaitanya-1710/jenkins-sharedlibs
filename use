@@ -1,0 +1,45 @@
+Here’s a sample Jira story for capturing and sending the DAST scan expiration date to ServiceNow:
+
+---
+
+### Jira Story
+
+**Title:** Capture and Send DAST Scan Expiration Date to ServiceNow
+
+**Story Points:** [Estimate]
+
+**Priority:** [Priority Level]
+
+**Assignee:** [Your Name/Team]
+
+**Description:**
+
+As a DevOps engineer, I want to capture the DAST scan expiration date and send this data point to ServiceNow, so that the ServiceNow entries contain complete and relevant information regarding the DAST scans.
+
+**Acceptance Criteria:**
+
+1. **Capture DAST Scan Expiration Date:**
+   - The pipeline should extract the DAST scan expiration date from the scan results.
+
+2. **Send Data to ServiceNow:**
+   - The pipeline should send the captured DAST scan expiration date along with other relevant data points to ServiceNow.
+
+3. **Verify Data in ServiceNow:**
+   - Ensure that the DAST scan expiration date is correctly recorded in the ServiceNow entry.
+
+**Technical Notes:**
+
+- Identify the field in the DAST scan results that contains the expiration date.
+- Update the pipeline script to extract this field.
+- Modify the ServiceNow API integration to include the DAST scan expiration date.
+- Test the updated pipeline to ensure data is sent correctly to ServiceNow.
+
+**Attachments:**
+- [Any related documentation or screenshots]
+
+**Dependencies:**
+- [Any dependencies on other tasks or teams]
+
+---
+
+You can modify the details as needed to fit your project management system and workflow.
