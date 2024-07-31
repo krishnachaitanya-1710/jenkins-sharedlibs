@@ -1,0 +1,43 @@
+### Jira Story
+
+**Title:** Enhancement of Region Selection for Release Candidates for Cloud Use Cases
+
+**Story Points:** [Estimate]
+
+**Priority:** [Priority Level]
+
+**Assignee:** [Your Name/Team]
+
+**Description:**
+
+As a DevOps engineer, I want to add a region parameter to release candidate packaging pipelines for cloud deployment use cases, so that AD can select the target region they want to deploy to while creating a valid release candidate. Currently, our pipelines default to `us-east-1` as the primary region for all cloud deployment use cases (e.g., 3PaaS builds and lambda updates). This setup works for general purposes like deploying to the default primary (`us-east-1`). However, it limits applications that need to deploy to other regions like Frankfurt.
+
+**Acceptance Criteria:**
+
+1. **Add Region Parameter:**
+   - Update the pipeline configuration to include a region parameter.
+   - Allow the selection of different target regions for cloud deployments.
+
+2. **Test Deployment to Multiple Regions:**
+   - Verify that the updated pipeline can deploy to `us-east-1`, `us-west-2`, and other specified regions, including Frankfurt.
+
+3. **Documentation and Training:**
+   - Update relevant documentation to include instructions on how to specify the deployment region.
+   - Conduct training or provide guidance to AD on how to select the target region during the release candidate creation process.
+
+**Technical Notes:**
+
+- Modify the pipeline scripts to accept and process a region parameter.
+- Ensure compatibility with existing deployment scripts and processes.
+- Perform extensive testing to ensure deployments are successful across different regions.
+
+**Attachments:**
+- [Link to the original email with details and discussion](file-Lt5FdrRAAWoM2pUQXsG7D05o)
+- [Jira ticket for more information](https://jira.dtcc.com:8443/browse/DSOSCITR-9738)
+
+**Dependencies:**
+- IRB approval may be required to support this enhancement.
+
+---
+
+You can adjust the details as needed to fit your specific project management requirements.
