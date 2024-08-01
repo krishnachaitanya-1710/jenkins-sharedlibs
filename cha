@@ -1,0 +1,22 @@
+Here's a message you can send to your manager on MS Teams:
+
+---
+
+Hi [Manager's Name],
+
+I have outlined the minimum tasks we need to accomplish for the A3P onboarding:
+
+1. New use case onboarding in SSP.
+2. Ensure AWS account information is available in SSP.
+3. Make AWS account information accessible in DDP pipelines.
+4. Set up prerequisites such as assume role-related components in A3P.
+5. Implement ASG refresh logic.
+
+Please let me know if there are any additional tasks or if you have any feedback on this list.
+
+Best regards,  
+[Sai]
+
+---
+
+Feel free to adjust as needed before sending.
