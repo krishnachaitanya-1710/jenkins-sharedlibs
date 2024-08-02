@@ -1,0 +1,17 @@
+Here's a refined version of your message:
+
+---
+
+"Hi team,
+
+Regarding the recent CMDB validations released in soft mode, these validations currently send an email to the users who triggered the pipeline as well as to the email distribution list specified in the `pipelineconfig.json`.
+
+It appears that every time release engineers invoke the pipelines, if the servers are not associated with the sys ID in CMDB, the pipeline automatically sends an email to the user who triggered it. This is especially problematic in the P2 environment where release engineers receive emails indicating that the server is not associated with their sys ID, despite the pipeline completing successfully. This can cause confusion.
+
+To avoid this, I suggest we limit the scope of these email notifications in the P2 environment to only the distribution list specified in the pipeline configuration, rather than including the build user.
+
+Thank you for your understanding and cooperation."
+
+---
+
+Feel free to adjust it further if needed.
