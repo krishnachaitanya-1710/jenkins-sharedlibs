@@ -1,0 +1,159 @@
+<h2 mat-dialog-title>Confirm Refresh</h2>
+<mat-dialog-content>
+  <p>Are you sure you want to clear all chat history?</p>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-button (click)="onConfirm()">Confirm</button>
+</mat-dialog-actions>
+
+
+  import { Component } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+
+@Component({
+  selector: 'app-confirm-dialog',
+  templateUrl: './confirm-dialog.component.html'
+})
+export class ConfirmDialogComponent {
+  constructor(public dialogRef: MatDialogRef<ConfirmDialogComponent>) {}
+
+  onConfirm(): void {
+    this.dialogRef.close(true);
+  }
+
+  onCancel(): void {
+    this.dialogRef.close(false);
+  }
+}
+
+
+<div *ngIf="isOpen" class="chatbox-container" [style.fontSize]="'14px'">
+  <div class="header" [style.--header-bg-color]="headerBgColor">
+    <h3>{{assistantTitle}}</h3>
+    <div class="header-buttons">
+      <button class="icon-button" id="RefreshButton" (click)="openConfirmDialog()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="fa fa-refresh" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M2 8a5.5 5.5 0 1 1 11 0h1.5A7 7 0 1 0 8 1.5V3a5.5 5.5 0 0 1 4.97 3.5H12a4.5 4.5 0 1 0-4 4.97v-1.5A5.5 5.5 0 0 1 2 8z"/>
+        </svg>
+      </button>
+      <span class="icon-button" (click)="toggleMinimize()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M2 8a5.5 5.5 0 1 1 11 0h1.5A7 7 0 1 0 8 1.5V3a5.5 5.5 0 0 1 4.97 3.5H12a4.5 4.5 0 1 0-4 4.97v-1.5A5.5 5.5 0 0 1 2 8z"/>
+        </svg>
+      </span>
+      <span class="icon-button" (click)="toggleResize()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows-angle-expand" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 1 0 .706l-4.096 4.096a.5.5 0 0 1-.708-.707l4.096-4.096a.5.5 0 0 1 .707 0z"/>
+        </svg>
+      </span>
+      <span class="icon-button" (click)="closeChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M2 8a5.5 5.5 0 1 1 11 0h1.5A7 7 0 1 0 8 1.5V3a5.5 5.5 0 0 1 4.97 3.5H12a4.5 4.5 0 1 0-4 4.97v-1.5A5.5 5.5 0 0 1 2 8z"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+  <div class="chat-content" [style.width]="chatBoxWidth" [style.height]="chatBoxHeight" *ngIf="!isMinimized && isOpen">
+    <div *ngFor="let message of allMessages">
+      <!-- Messages will be shown here -->
+    </div>
+  </div>
+</div>
+
+
+  import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+
+@Component({
+  selector: 'app-chatbox-shared',
+  templateUrl: './chatbox-shared.component.html',
+  styleUrls: ['./chatbox-shared.component.scss']
+})
+export class ChatboxSharedComponent implements OnInit {
+  isOpen = true;
+  isMinimized = false;
+  chatBoxWidth = '400px';
+  chatBoxHeight = '600px';
+  headerBgColor = '#004225';
+  allMessages = [];
+  assistantTitle = 'Smart Assistant';
+
+  constructor(public dialog: MatDialog) {}
+
+  ngOnInit(): void {
+    this.loadChat();
+  }
+
+  toggleMinimize() {
+    this.isMinimized = !this.isMinimized;
+  }
+
+  toggleResize() {
+    if (this.chatBoxWidth === '400px') {
+      this.chatBoxWidth = '600px';
+      this.chatBoxHeight = '800px';
+    } else {
+      this.chatBoxWidth = '400px';
+      this.chatBoxHeight = '600px';
+    }
+  }
+
+  closeChat() {
+    this.isOpen = false;
+  }
+
+  openConfirmDialog() {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.refreshChat();
+      }
+    });
+  }
+
+  refreshChat() {
+    this.isOpen = false; // Close the chat to reset the state
+    setTimeout(() => {
+      this.isOpen = true; // Reopen the chat after a short delay to trigger reinitialization
+      this.loadChat(); // Reload the chat
+    }, 100); // Adjust the delay as needed
+  }
+
+  loadChat() {
+    // Logic to load the chat from start to finish
+    // For example, fetching initial messages from a service
+    this.allMessages = []; // Clear current messages
+    this.allMessages.push({ text: 'Welcome to the Smart Assistant!' }); // Example initial message
+    // You can add more initial messages or fetch them from a service
+  }
+}
+
+
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatDialogModule } from '@angular/material/dialog';
+
+import { AppComponent } from './app.component';
+import { ChatboxSharedComponent } from './chatbox-shared/chatbox-shared.component';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    ChatboxSharedComponent,
+    ConfirmDialogComponent
+  ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    MatDialogModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
