@@ -1,0 +1,179 @@
+To integrate the functionality for onboarding a service, onboarding an API, and updating an API with the Smart Assistant Admin frontend, we can follow these steps. We will use Angular to create forms and invoke the backend APIs upon submission. Below is the code to achieve this.
+
+### 1. Create the Forms in HTML
+
+Add the forms to your `admin.component.html` to capture the necessary details for onboarding a service, onboarding an API, and updating an API.
+
+```html
+<!-- Onboard Service Form -->
+<form #onboardServiceForm="ngForm" (ngSubmit)="onboardService(onboardServiceForm)">
+  <h2>Onboard Service</h2>
+  <label for="serviceName">Service Name:</label>
+  <input type="text" id="serviceName" name="serviceName" ngModel required>
+  <button type="submit">Onboard Service</button>
+</form>
+
+<!-- Onboard API Form -->
+<form #onboardApiForm="ngForm" (ngSubmit)="onboardApi(onboardApiForm)">
+  <h2>Onboard API</h2>
+  <label for="serviceName">Service Name:</label>
+  <input type="text" id="serviceName" name="serviceName" ngModel required>
+  <label for="apiName">API Name:</label>
+  <input type="text" id="apiName" name="apiName" ngModel required>
+  <label for="endpoint">Endpoint:</label>
+  <input type="text" id="endpoint" name="endpoint" ngModel required>
+  <label for="method">Method:</label>
+  <input type="text" id="method" name="method" ngModel required>
+  <button type="submit">Onboard API</button>
+</form>
+
+<!-- Update API Form -->
+<form #updateApiForm="ngForm" (ngSubmit)="updateApi(updateApiForm)">
+  <h2>Update API</h2>
+  <label for="serviceName">Service Name:</label>
+  <input type="text" id="serviceName" name="serviceName" ngModel required>
+  <label for="apiName">API Name:</label>
+  <input type="text" id="apiName" name="apiName" ngModel required>
+  <label for="endpoint">Endpoint:</label>
+  <input type="text" id="endpoint" name="endpoint" ngModel required>
+  <label for="method">Method:</label>
+  <input type="text" id="method" name="method" ngModel required>
+  <button type="submit">Update API</button>
+</form>
+```
+
+### 2. Implement the Form Submission Methods in the Component
+
+In `admin.component.ts`, add the methods to handle form submissions and invoke the corresponding backend APIs.
+
+```typescript
+import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-admin',
+  templateUrl: './admin.component.html',
+  styleUrls: ['./admin.component.css']
+})
+export class AdminComponent {
+  constructor(private http: HttpClient) {}
+
+  onboardService(form: any) {
+    const serviceName = form.value.serviceName;
+    this.http.post('/smartassistant/onboardService', { serviceName })
+      .subscribe(
+        response => console.log('Service onboarded successfully', response),
+        error => console.error('Error onboarding service', error)
+      );
+  }
+
+  onboardApi(form: any) {
+    const apiDetails = {
+      serviceName: form.value.serviceName,
+      apiName: form.value.apiName,
+      endpoint: form.value.endpoint,
+      method: form.value.method
+    };
+    this.http.post('/smartassistant/onboardApi', apiDetails)
+      .subscribe(
+        response => console.log('API onboarded successfully', response),
+        error => console.error('Error onboarding API', error)
+      );
+  }
+
+  updateApi(form: any) {
+    const apiDetails = {
+      serviceName: form.value.serviceName,
+      apiName: form.value.apiName,
+      endpoint: form.value.endpoint,
+      method: form.value.method
+    };
+    this.http.put('/smartassistant/updateApi', apiDetails)
+      .subscribe(
+        response => console.log('API updated successfully', response),
+        error => console.error('Error updating API', error)
+      );
+  }
+}
+```
+
+### 3. Update the Backend API Endpoints to Match the Frontend
+
+Ensure that the backend API endpoints match the paths used in the Angular HTTP requests.
+
+```java
+@RestController
+@RequestMapping("/smartassistant")
+public class SmartAssistantController {
+
+    @Autowired
+    private SmartAssistantService smartAssistantService;
+
+    @PostMapping("/onboardService")
+    public ResponseEntity<String> onboardService(@RequestBody Map<String, String> request) {
+        try {
+            String serviceName = request.get("serviceName");
+            smartAssistantService.onboardService(serviceName);
+            return ResponseEntity.ok("Service onboarded successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/onboardApi")
+    public ResponseEntity<String> onboardApi(@RequestBody ApiDetailsRequest request) {
+        try {
+            smartAssistantService.onboardApi(request);
+            return ResponseEntity.ok("API onboarded successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/updateApi")
+    public ResponseEntity<String> updateApi(@RequestBody ApiDetailsRequest request) {
+        try {
+            smartAssistantService.updateApi(request);
+            return ResponseEntity.ok("API updated successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+}
+```
+
+### 4. Create a Model for API Details Request
+
+Create a model class `ApiDetailsRequest` to encapsulate the API details in the backend.
+
+```java
+public class ApiDetailsRequest {
+    private String serviceName;
+    private String apiName;
+    private String endpoint;
+    private String method;
+
+    // Getters and setters
+}
+```
+
+### 5. Ensure CORS Configuration
+
+If your backend and frontend are hosted on different servers, ensure that CORS (Cross-Origin Resource Sharing) is configured properly in your backend.
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```
+
+With these changes, the Smart Assistant Admin component will be able to invoke the backend APIs to onboard services, onboard APIs, and update APIs upon form submission.
