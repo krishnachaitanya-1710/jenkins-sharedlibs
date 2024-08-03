@@ -1,0 +1,58 @@
+<button class="icon-button" id="RefreshButton" (click)="refreshChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="fa fa-refresh" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M2 8a5.5 5.5 0 1 1 11 0h1.5A7 7 0 1 0 8 1.5V3a5.5 5.5 0 0 1 4.97 3.5H12a4.5 4.5 0 1 0-4 4.97v-1.5A5.5 5.5 0 0 1 2 8z"/>
+        </svg>
+      </button>
+
+
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-chatbox-shared',
+  templateUrl: './chatbox-shared.component.html',
+  styleUrls: ['./chatbox-shared.component.scss']
+})
+export class ChatboxSharedComponent implements OnInit {
+  isOpen = true;
+  isMinimized = false;
+  chatBoxWidth = '400px';
+  chatBoxHeight = '600px';
+  headerBgColor = '#004225';
+  allMessages = [];
+  assistantTitle = 'Smart Assistant';
+
+  constructor() { }
+
+  ngOnInit(): void {
+    this.loadChat();
+  }
+
+  toggleMinimize() {
+    this.isMinimized = !this.isMinimized;
+  }
+
+  toggleResize() {
+    if (this.chatBoxWidth === '400px') {
+      this.chatBoxWidth = '600px';
+      this.chatBoxHeight = '800px';
+    } else {
+      this.chatBoxWidth = '400px';
+      this.chatBoxHeight = '600px';
+    }
+  }
+
+  closeChat() {
+    this.isOpen = false;
+  }
+
+  refreshChat() {
+    this.loadChat();
+  }
+
+  loadChat() {
+    // Logic to load the chat from start to finish
+    // For example, fetching initial messages from a service
+    this.allMessages = []; // Clear current messages
+    // Add logic to fetch and load initial messages
+  }
+}
