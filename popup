@@ -1,0 +1,115 @@
+Let's update your current implementation to include an automatic pop-up functionality and enhance the chat icon's appearance. I'll provide you with updated HTML and CSS to achieve this.
+
+### HTML
+
+Here is your updated HTML:
+
+```html
+<div class="header"></div>
+<div class="chat-content">
+  <div class="chat-action" *ngIf="!isMinimized">
+    <input
+      type="text"
+      placeholder="Type your message..."
+      (keydown.enter)="sendMessage()"
+      [(ngModel)]="message"
+      class="single-input"
+    />
+    <button mat-icon-button (click)="sendMessage()" class="stylish-send-button" aria-label="send message">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+        <path d="M15.854.146a.5.5 0 0 1 .11.547l-7.5 15a.5.5 0 0 1-.91-.328l1.859-7.436-7.5-7.5a.5.5 0 0 1 .637-.765l7.436 1.86L15.328.146a.5.5 0 0 1 .527 0z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<button mat-fab style="display:none;" *ngIf="loading">
+  <i class="fa fa-spinner fa-spin" style="font-size:24px;"></i>
+</button>
+
+<!-- Updated chat icon -->
+<button id="chat-icon" mat-fab *ngIf="!loading" (click)="toggleChatbox()">
+  <i class="fas fa-comments"></i>
+</button>
+
+<!-- Chatbox content -->
+<div id="chatbox" *ngIf="!isMinimized" style="display: none;">
+  <!-- Chatbox content -->
+</div>
+```
+
+### CSS
+
+Here is your updated CSS:
+
+```css
+/* Enhance the chat icon look and feel */
+#chat-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #007BFF;
+  color: white;
+  padding: 15px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#chat-icon i {
+  font-size: 24px;
+}
+
+#chat-icon:hover {
+  background-color: #0056b3;
+}
+
+#chatbox {
+  /* Add your chatbox styles here */
+}
+```
+
+### TypeScript
+
+Ensure your component handles showing the chatbox on page load:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-chatbox',
+  templateUrl: './chatbox.component.html',
+  styleUrls: ['./chatbox.component.css']
+})
+export class ChatboxComponent implements OnInit {
+  message: string = '';
+  isMinimized: boolean = true;
+  loading: boolean = false;
+
+  constructor() { }
+
+  ngOnInit(): void {
+    this.showChatbox();
+  }
+
+  sendMessage(): void {
+    // Your send message logic
+  }
+
+  toggleChatbox(): void {
+    this.isMinimized = !this.isMinimized;
+    if (!this.isMinimized) {
+      this.showChatbox();
+    }
+  }
+
+  showChatbox(): void {
+    const chatbox = document.getElementById('chatbox');
+    if (chatbox) {
+      chatbox.style.display = 'block';
+    }
+  }
+}
+```
+
+With these updates, your chat icon should look more appealing, and the chatbox will automatically pop up when the page loads, grabbing the user's attention effectively.
