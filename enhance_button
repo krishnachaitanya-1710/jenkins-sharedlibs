@@ -1,0 +1,51 @@
+<div class="confirmation-dialog">
+  <p>Are you sure you want to clear all chat history?</p>
+  <div class="buttons">
+    <button class="btn cancel" (click)="onCancel()">Cancel</button>
+    <button class="btn confirm" (click)="onConfirm()">Confirm</button>
+  </div>
+</div>
+
+
+.confirmation-dialog {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 300px;
+  margin: auto;
+  text-align: center;
+}
+
+.confirmation-dialog p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #333;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn.cancel {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.btn.confirm {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
