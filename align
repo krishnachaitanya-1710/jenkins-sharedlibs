@@ -1,0 +1,14 @@
+this.columnDefs.push({
+    headerName: 'Actions',
+    field: 'actions',
+    cellRenderer: /* istanbul ignore next */ function (params) {
+        return `<div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <span style="font-size: 0.8vw;">
+                        <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                    </span>
+                </div>`;
+    },
+    cellStyle: { 'textAlign': 'center' },
+    sortable: false,
+    filter: false
+});
