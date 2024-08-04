@@ -1,3 +1,97 @@
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-admin-management',
+  templateUrl: './admin-management.component.html',
+  styleUrls: ['./admin-management.component.css']
+})
+export class AdminManagementComponent implements OnInit {
+  configData: any;
+  apps: string[] = [];
+  services: any = {};
+  apis: any = {};
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.loadConfigurations();
+  }
+
+  loadConfigurations(): void {
+    this.http.get('/api/configurations').subscribe(
+      (data: any) => {
+        this.configData = data;
+        this.apps = Object.keys(data);
+        this.setServicesAndApis(data);
+      },
+      error => {
+        console.error('Error loading configurations', error);
+      }
+    );
+  }
+
+  setServicesAndApis(data: any): void {
+    this.apps.forEach(app => {
+      this.services[app] = data[app].services.map(service => service.name);
+      this.apis[app] = {};
+      data[app].services.forEach(service => {
+        this.apis[app][service.name] = service.apis.map(api => api.name);
+      });
+    });
+  }
+}
+
+
+
+<form (ngSubmit)="onSubmitService(serviceForm)" #serviceForm="ngForm">
+  <div class="form-group">
+    <label for="appName">App Name</label>
+    <select id="appName" name="appName" class="form-control" [(ngModel)]="selectedAppName" (change)="onAppChange()">
+      <option *ngFor="let app of apps" [value]="app">{{ app }}</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="serviceName">Service Name</label>
+    <select id="serviceName" name="serviceName" class="form-control" [(ngModel)]="selectedServiceName">
+      <option *ngFor="let service of services[selectedAppName]" [value]="service">{{ service }}</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">Onboard Service</button>
+</form>
+
+<form (ngSubmit)="onSubmitApi(apiForm)" #apiForm="ngForm">
+  <div class="form-group">
+    <label for="appName">App Name</label>
+    <select id="appName" name="appName" class="form-control" [(ngModel)]="selectedAppName" (change)="onAppChange()">
+      <option *ngFor="let app of apps" [value]="app">{{ app }}</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="serviceName">Service Name</label>
+    <select id="serviceName" name="serviceName" class="form-control" [(ngModel)]="selectedServiceName" (change)="onServiceChange()">
+      <option *ngFor="let service of services[selectedAppName]" [value]="service">{{ service }}</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="apiName">API Name</label>
+    <input type="text" id="apiName" name="apiName" class="form-control" ngModel>
+  </div>
+  <!-- Add other fields as necessary -->
+  <button type="submit" class="btn btn-primary">Onboard API</button>
+</form>
+
+<ag-grid-angular
+  style="width: 100%; height: 600px;"
+  class="ag-theme-alpine"
+  [rowData]="configData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [animateRows]="true">
+</ag-grid-angular>
+
+
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
