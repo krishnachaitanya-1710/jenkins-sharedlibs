@@ -1,0 +1,166 @@
+To integrate the configurations API and load the data dynamically in your admin portal, you need to adjust both the backend and the frontend code.
+
+### Backend Code for `/api/configurations`
+
+First, create a new endpoint in your Spring Boot application to fetch the configurations from the S3 bucket:
+
+```java
+@RestController
+@RequestMapping("/api")
+public class SmartAssistantController {
+
+    @Autowired
+    private SmartAssistantService smartAssistantService;
+
+    @GetMapping("/configurations")
+    public ResponseEntity<Map<String, Object>> getConfigurations() {
+        try {
+            Map<String, Object> configurations = smartAssistantService.getConfigurations();
+            return ResponseEntity.ok(configurations);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+}
+```
+
+Then, update your `SmartAssistantService` to include the method `getConfigurations` which fetches and parses the configuration files from the S3 bucket:
+
+```java
+@Service
+public class SmartAssistantService {
+
+    @Autowired
+    private AmazonS3 s3Client;
+
+    public Map<String, Object> getConfigurations() throws IOException {
+        Map<String, Object> configurations = new HashMap<>();
+        
+        // Assume you have a list of applications in your S3 bucket
+        List<String> appNames = List.of("ddpappweb", "ssp", "rcm", "common");
+
+        for (String appName : appNames) {
+            String configFilePath = String.format("smartassistant/%s/config.json", appName);
+            S3Object s3Object = s3Client.getObject(new GetObjectRequest("your-bucket-name", configFilePath));
+            InputStream inputStream = s3Object.getObjectContent();
+            ObjectMapper objectMapper = new ObjectMapper();
+            SmartAssistantApiResponse response = objectMapper.readValue(inputStream, SmartAssistantApiResponse.class);
+
+            configurations.put(appName, response);
+        }
+        
+        return configurations;
+    }
+}
+```
+
+### Frontend Code to Load Configurations and Populate Forms
+
+1. **Update the `loadConfigurations` Method**
+
+```typescript
+loadConfigurations(): void {
+    this.http.get('/api/configurations').subscribe(
+      (data: any) => {
+        this.configData = data;
+        this.apps = Object.keys(data);
+        this.services = {}; // Initialize services as an object
+        this.apis = {}; // Initialize apis as an object
+
+        this.apps.forEach(app => {
+          this.services[app] = data[app].services.map(service => service.name);
+          data[app].services.forEach(service => {
+            this.apis[service.name] = service.apis.map(api => api.name);
+          });
+        });
+
+        // Generate column definitions and row data based on the loaded config data
+        this.generateColumnDefs(data);
+        this.generateRowData(data);
+      },
+      error => {
+        console.error('Error loading configurations', error);
+      }
+    );
+  }
+```
+
+2. **Generate Column Definitions and Row Data**
+
+```typescript
+generateColumnDefs(data: any): void {
+    const allKeys = new Set<string>();
+
+    this.apps.forEach(app => {
+      data[app].services.forEach(service => {
+        service.apis.forEach(api => {
+          Object.keys(api).forEach(key => {
+            if (!this.fieldsToSkip.includes(key)) {
+              allKeys.add(key);
+            }
+          });
+        });
+      });
+    });
+
+    this.columnDefs = Array.from(allKeys).map((key: string) => ({
+      headerName: key.charAt(0).toUpperCase() + key.slice(1),
+      field: key,
+      sortable: true,
+      filter: true,
+      minWidth: 200,
+      cellStyle: { 'white-space': 'normal', 'text-align': 'left' },
+      autoHeight: true,
+      cellRenderer: (params: any) => {
+        if (Array.isArray(params.value)) {
+          return params.value.join(', ');
+        }
+        return params.value ? params.value : '--';
+      }
+    }));
+
+    this.columnDefs.push({
+      headerName: 'Actions',
+      field: 'actions',
+      cellRenderer: (params: any) => {
+        return `<span style="font-size:0.8vw"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span>`;
+      },
+      sortable: false,
+      filter: false
+    });
+  }
+
+generateRowData(data: any): void {
+    this.rowData = [];
+
+    this.apps.forEach(app => {
+      data[app].services.forEach(service => {
+        service.apis.forEach(api => {
+          const row = {};
+          Object.keys(api).forEach(key => {
+            if (!this.fieldsToSkip.includes(key)) {
+              row[key] = Array.isArray(api[key]) ? api[key].join(', ') : (api[key] || '--');
+            }
+          });
+          this.rowData.push(row);
+        });
+      });
+    });
+  }
+```
+
+3. **Bind Data to Forms and Tables**
+
+Update your component's template and form controls to bind the loaded data dynamically. Make sure to update the select inputs for app names and services based on the loaded configurations.
+
+### Final Component Structure
+
+Ensure your component initializes configurations when loaded and updates the forms accordingly.
+
+```typescript
+ngOnInit() {
+  this.loadConfigurations();
+}
+```
+
+By implementing these changes, you can dynamically load configurations, manage them through the admin portal, and ensure seamless operations against backend-stored configs.
