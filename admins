@@ -1,3 +1,53 @@
+import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+public class SmartAssistantAdminService {
+
+    @Autowired
+    private AmazonS3 s3Client;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private final String bucketName = "your-bucket-name";
+
+    public Map<String, Object> getConfigurations() throws Exception {
+        Map<String, Object> configurations = new HashMap<>();
+
+        // Iterate through the apps in the S3 bucket
+        for (String appName : getAppNames()) {
+            String configKey = "smartassistant/" + appName + "/config.json";
+            String configContent = s3Client.getObjectAsString(bucketName, configKey);
+            Map<String, Object> appConfig = objectMapper.readValue(configContent, Map.class);
+            configurations.put(appName, appConfig);
+        }
+
+        return configurations;
+    }
+
+    private List<String> getAppNames() {
+        // Fetch the list of app names from S3 bucket
+        List<String> appNames = new ArrayList<>();
+        ObjectListing listing = s3Client.listObjects(bucketName, "smartassistant/");
+        for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+            String key = summary.getKey();
+            if (key.endsWith("/config.json")) {
+                appNames.add(key.split("/")[1]);
+            }
+        }
+        return appNames;
+    }
+}
+
+
+
+
 To create a dynamic admin portal for managing configurations in your Smart Assistant application, you will need to follow these steps:
 
 1. **Load Configurations at Initialization**
