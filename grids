@@ -1,0 +1,148 @@
+To fix the context menu so it pops up only when you click on the actions icon and not on a right-click anywhere in the grid, you need to modify the grid configuration and handle the context menu click event properly. Here's how you can achieve this:
+
+### Step 1: Define the Cell Renderer for Actions Column
+Ensure you have a cell renderer for the actions column that triggers the context menu.
+
+```typescript
+import { Component } from '@angular/core';
+import { ICellRendererAngularComp } from 'ag-grid-angular';
+
+@Component({
+  selector: 'app-actions-cell-renderer',
+  template: `
+    <span (click)="showContextMenu($event)">
+      <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+    </span>
+  `,
+  styles: [`
+    span {
+      cursor: pointer;
+    }
+    i {
+      font-size: 1.1vw;
+      padding: 5px;
+      color: cadetblue;
+    }
+  `]
+})
+export class ActionsCellRendererComponent implements ICellRendererAngularComp {
+  params: any;
+
+  agInit(params: any): void {
+    this.params = params;
+  }
+
+  refresh(params: any): boolean {
+    return false;
+  }
+
+  showContextMenu(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.params.context.componentParent.getContextMenuItems({
+      node: this.params.node,
+      column: this.params.column,
+      value: this.params.value,
+      api: this.params.api,
+      columnApi: this.params.columnApi,
+      context: this.params.context
+    }).forEach((item: any) => {
+      console.log(item); // For debugging
+    });
+  }
+}
+```
+
+### Step 2: Update the Column Definition
+Make sure your column definition for the actions column uses the custom cell renderer.
+
+```typescript
+this.columnDefs = [
+  // other column definitions
+  {
+    headerName: 'Actions',
+    field: 'actions',
+    cellRenderer: 'actionsCellRenderer',
+    sortable: false,
+    filter: false
+  }
+];
+
+this.frameworkComponents = {
+  actionsCellRenderer: ActionsCellRendererComponent
+};
+```
+
+### Step 3: Implement the `getContextMenuItems` Function
+Update your `getContextMenuItems` function to correctly return the menu items.
+
+```typescript
+getContextMenuItems(params: any): any {
+  const { node, column, value, api, columnApi, context } = params;
+
+  if (column.colId === 'actions') {
+    return [
+      {
+        name: 'View Record',
+        action: () => this.viewApi(node.data),
+        icon: '<i class="fa fa-list-alt" style="color:cadetblue;font-size: 1.1vw;padding:5px"></i>'
+      },
+      {
+        name: 'Edit Record',
+        action: () => this.editApi(node.data),
+        icon: '<i class="fa fa-pencil-square-o" style="color:darkgreen;font-size: 1.1vw;padding:5px"></i>'
+      },
+      {
+        name: 'Clone Record',
+        action: () => this.cloneApi(node.data),
+        icon: '<i class="fa fa-clone" style="color:darkorange;font-size: 1.1vw;padding:5px"></i>'
+      }
+    ];
+  }
+
+  // Return an empty array if it's not the actions column to disable the right-click menu everywhere else
+  return [];
+}
+```
+
+### Step 4: Modify the Grid Options
+Ensure that the grid options are set correctly to use the context menu and the custom cell renderer.
+
+```typescript
+this.gridOptions = {
+  context: { componentParent: this },
+  frameworkComponents: {
+    actionsCellRenderer: ActionsCellRendererComponent
+  },
+  getContextMenuItems: this.getContextMenuItems.bind(this),
+  onCellContextMenu: (event: any) => {
+    if (event.column.colId !== 'actions') {
+      event.api.hideOverlay();
+    }
+  }
+};
+```
+
+### Step 5: Ensure Dependencies and Modules are Imported
+Ensure all necessary Angular modules and dependencies are imported correctly in your Angular module.
+
+```typescript
+import { AgGridModule } from 'ag-grid-angular';
+import { ActionsCellRendererComponent } from './actions-cell-renderer.component';
+
+// in your module
+@NgModule({
+  declarations: [
+    // other components
+    ActionsCellRendererComponent
+  ],
+  imports: [
+    // other modules
+    AgGridModule.withComponents([ActionsCellRendererComponent])
+  ],
+  // other configurations
+})
+export class YourModule { }
+```
+
+This setup ensures that the context menu only appears when clicking on the actions icon in the specified column and not on a right-click anywhere in the grid. The context menu will provide the options "View Record", "Edit Record", and "Clone Record", and handle the actions accordingly.
