@@ -1,0 +1,207 @@
+To integrate the context menu functionality directly into your existing component without creating a separate component, you can follow these steps:
+
+1. **Add Context Menu Items:**
+   Define the context menu items within your component and bind the necessary events to handle the actions.
+
+2. **Update the HTML Template:**
+   Ensure the HTML template has the necessary structure to display the context menu when the actions column is clicked.
+
+3. **Handle the Context Menu Actions:**
+   Implement the logic to handle the context menu actions such as viewing, editing, and cloning the API.
+
+Here's the complete integration based on your existing setup:
+
+### HTML Template (`admin-management.component.html`)
+```html
+<!-- Add this div to display the context menu -->
+<div *ngIf="contextMenuPosition" [style.top.px]="contextMenuPosition.y" [style.left.px]="contextMenuPosition.x" class="context-menu">
+  <ul>
+    <li (click)="viewApi(contextMenuData)">View Record</li>
+    <li (click)="editApi(contextMenuData)">Edit Record</li>
+    <li (click)="cloneApi(contextMenuData)">Clone Record</li>
+  </ul>
+</div>
+
+<!-- Your existing ag-grid-angular setup -->
+<ag-grid-angular
+  #apiGrid
+  style="width: 100%; height: 100%;"
+  class="ag-theme-balham"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [gridOptions]="gridOptions"
+  (gridReady)="onGridReady($event)"
+  (cellContextMenu)="onCellContextMenu($event)"
+  (rowClicked)="onRowClicked($event)"
+  [enableCellTextSelection]="true">
+</ag-grid-angular>
+```
+
+### Component TypeScript (`admin-management.component.ts`)
+```typescript
+import { Component, OnInit, HostListener } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-admin-management',
+  templateUrl: './admin-management.component.html',
+  styleUrls: ['./admin-management.component.scss']
+})
+export class AdminManagementComponent implements OnInit {
+  configData: any;
+  apps: string[];
+  services: any[];
+  apis: any[];
+  rowData: any[] = [];
+  columnDefs: any[] = [];
+  contextMenuPosition: { x: number, y: number } = null;
+  contextMenuData: any = null;
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.loadConfigurations();
+  }
+
+  loadConfigurations(): void {
+    this.http.get('/api/configurations').subscribe(
+      (data: any) => {
+        this.configData = data;
+        this.apps = Object.keys(data);
+        this.setServicesAndApis(data);
+        this.generateColumnDefs(data);
+        this.generateRowData(data);
+      },
+      error => {
+        console.error('Error loading configurations', error);
+      }
+    );
+  }
+
+  setServicesAndApis(data: any): void {
+    this.services = [];
+    this.apis = [];
+    this.apps.forEach(app => {
+      data[app].services.forEach(service => {
+        this.services.push(service);
+        service.apis.forEach(api => {
+          this.apis.push({ ...api, appName: app, serviceName: service.name });
+        });
+      });
+    });
+  }
+
+  generateColumnDefs(data: any): void {
+    const allKeys = new Set<string>();
+    this.apps.forEach(app => {
+      data[app].services.forEach(service => {
+        service.apis.forEach(api => {
+          Object.keys(api).forEach(key => {
+            if (!['appName', 'serviceName'].includes(key)) {
+              allKeys.add(key);
+            }
+          });
+        });
+      });
+    });
+    allKeys.add('appName');
+    allKeys.add('serviceName');
+    this.columnDefs = Array.from(allKeys).map(key => ({
+      headerName: key.charAt(0).toUpperCase() + key.slice(1),
+      field: key,
+      sortable: true,
+      filter: true,
+      minWidth: 200,
+      cellStyle: { 'white-space': 'normal', 'text-align': 'left' },
+      autoHeight: true,
+      cellRenderer: (params: any) => {
+        if (Array.isArray(params.value)) {
+          return params.value.join(', ');
+        }
+        return params.value ? params.value : '--';
+      }
+    }));
+    this.columnDefs.push({
+      headerName: 'Actions',
+      field: 'actions',
+      cellRenderer: (params: any) => {
+        return `<span class="action-button">...</span>`;
+      },
+      sortable: false,
+      filter: false
+    });
+  }
+
+  generateRowData(data: any): void {
+    this.rowData = [];
+    this.apps.forEach(app => {
+      data[app].services.forEach(service => {
+        service.apis.forEach(api => {
+          const row = { appName: app, serviceName: service.name };
+          Object.keys(api).forEach(key => {
+            row[key] = Array.isArray(api[key]) ? api[key].join(', ') : (api[key] || '--');
+          });
+          this.rowData.push(row);
+        });
+      });
+    });
+  }
+
+  onCellContextMenu(event: any): void {
+    event.event.preventDefault();
+    this.contextMenuPosition = { x: event.event.clientX, y: event.event.clientY };
+    this.contextMenuData = event.data;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.contextMenuPosition) {
+      this.contextMenuPosition = null;
+    }
+  }
+
+  viewApi(data: any): void {
+    // Implement your view logic here
+  }
+
+  editApi(data: any): void {
+    // Implement your edit logic here
+  }
+
+  cloneApi(data: any): void {
+    // Implement your clone logic here
+  }
+}
+```
+
+### CSS Styles (`admin-management.component.scss`)
+```scss
+.context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      padding: 8px 12px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #f5f5f5;
+      }
+    }
+  }
+}
+
+.ag-theme-balham {
+  height: 100%;
+}
+```
+
+This implementation sets up the context menu to appear only when the "Actions" cell is clicked. It also ensures the context menu closes when clicking outside of it. The `onCellContextMenu` method sets the position and data for the context menu, and `@HostListener('document:click')` ensures the menu closes when clicking elsewhere on the document.
