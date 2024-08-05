@@ -1,0 +1,78 @@
+import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ColDef, GridReadyEvent } from 'ag-grid-community';
+
+@Component({
+  selector: 'app-admin-management',
+  templateUrl: './admin-management.component.html',
+  styleUrls: ['./admin-management.component.css']
+})
+export class AdminManagementComponent {
+  private gridApi;
+  private gridColumnApi;
+
+  public columnDefs: ColDef[] = [
+    { headerName: 'App Name', field: 'appName', resizable: true },
+    { headerName: 'Service Name', field: 'serviceName', resizable: true },
+    { headerName: 'Name', field: 'name', resizable: true },
+    { headerName: 'Label', field: 'label', resizable: true },
+    { headerName: 'Endpoint', field: 'endpoint', resizable: true },
+    { headerName: 'Method', field: 'method', resizable: true },
+    { headerName: 'Keywords', field: 'keywords', resizable: true },
+    {
+      headerName: 'Actions',
+      field: 'actions',
+      resizable: false,
+      cellRenderer: /* istanbul ignore next */ function (params) {
+        return `<div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <span style="font-size: 0.8vw;">
+                        <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                    </span>
+                </div>`;
+      },
+      cellStyle: { 'textAlign': 'center' },
+      sortable: false,
+      filter: false
+    }
+  ];
+
+  public rowData: any[];
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.loadConfigurations();
+  }
+
+  loadConfigurations(): void {
+    this.http.get('/api/configurations').subscribe(
+      (data: any) => {
+        this.configData = data;
+        this.apps = Object.keys(data);
+        this.setServicesAndApis(data);
+        this.autoSizeAllColumns();
+      },
+      error => {
+        console.error('Error loading configurations', error);
+      }
+    );
+  }
+
+  setServicesAndApis(data): void {
+    // Your logic to set services and APIs
+  }
+
+  onGridReady(params: GridReadyEvent): void {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+
+    this.autoSizeAllColumns();
+  }
+
+  autoSizeAllColumns(): void {
+    if (this.gridColumnApi) {
+      const allColumnIds = this.gridColumnApi.getAllColumns().map(column => column.getId());
+      this.gridColumnApi.autoSizeColumns(allColumnIds);
+    }
+  }
+}
