@@ -1,0 +1,19 @@
+<div>
+  <h2>Onboard New API</h2>
+  <form (ngSubmit)="onSubmit()">
+    <div>
+      <label for="appName">Application Name</label>
+      <select id="appName" [(ngModel)]="selectedApp" name="appName" (change)="onAppChange(selectedApp)">
+        <option *ngFor="let app of apps" [value]="app">{{ app }}</option>
+      </select>
+    </div>
+    <div>
+      <label for="serviceName">Service Name</label>
+      <select id="serviceName" [(ngModel)]="serviceName" name="serviceName">
+        <option *ngFor="let service of filteredServices" [value]="service">{{ service }}</option>
+      </select>
+    </div>
+    <!-- Other form fields for API onboarding -->
+    <button type="submit">Submit</button>
+  </form>
+</div>
