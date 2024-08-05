@@ -1,0 +1,162 @@
+To implement the context menu functionality directly within your component without creating a separate component, you can modify your `admin-management.component.ts` and `admin-management.component.html` to handle the context menu within the cell renderer itself. Here's how you can do it:
+
+### Step 1: Modify the Cell Renderer in `admin-management.component.ts`
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { GridOptions } from 'ag-grid-community';
+
+@Component({
+  selector: 'app-admin-management',
+  templateUrl: './admin-management.component.html',
+  styleUrls: ['./admin-management.component.scss']
+})
+export class AdminManagementComponent implements OnInit {
+  public gridOptions: GridOptions;
+  public columnDefs: any[];
+  public rowData: any[];
+
+  constructor(private http: HttpClient) {
+    this.gridOptions = {
+      context: { componentParent: this },
+      getContextMenuItems: this.getContextMenuItems.bind(this)
+    };
+
+    this.columnDefs = [
+      // other column definitions
+      {
+        headerName: 'Actions',
+        field: 'actions',
+        cellRenderer: this.actionsCellRenderer,
+        sortable: false,
+        filter: false
+      }
+    ];
+  }
+
+  ngOnInit(): void {
+    this.loadConfigurations();
+  }
+
+  loadConfigurations(): void {
+    this.http.get('/api/configurations').subscribe(
+      (data: any) => {
+        this.rowData = this.generateRowData(data);
+      },
+      error => {
+        console.error('Error loading configurations', error);
+      }
+    );
+  }
+
+  generateRowData(data: any): any[] {
+    let rowData = [];
+    Object.keys(data).forEach(app => {
+      data[app].services.forEach(service => {
+        service.apis.forEach(api => {
+          rowData.push({
+            appName: app,
+            serviceName: service.name,
+            ...api
+          });
+        });
+      });
+    });
+    return rowData;
+  }
+
+  actionsCellRenderer(params: any): string {
+    return `
+      <span style="cursor: pointer;" (click)="showContextMenu($event, ${params.node.rowIndex})">
+        <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+      </span>
+    `;
+  }
+
+  showContextMenu(event: MouseEvent, rowIndex: number) {
+    event.preventDefault();
+    const node = this.gridOptions.api.getDisplayedRowAtIndex(rowIndex);
+    const contextMenuItems = this.getContextMenuItems({ node });
+    // Render the context menu based on contextMenuItems
+  }
+
+  getContextMenuItems(params: any): any {
+    const { node } = params;
+
+    return [
+      {
+        name: 'View Record',
+        action: () => this.viewApi(node.data),
+        icon: '<i class="fa fa-list-alt" style="color:cadetblue;font-size: 1.1vw;padding:5px"></i>'
+      },
+      {
+        name: 'Edit Record',
+        action: () => this.editApi(node.data),
+        icon: '<i class="fa fa-pencil-square-o" style="color:darkgreen;font-size: 1.1vw;padding:5px"></i>'
+      },
+      {
+        name: 'Clone Record',
+        action: () => this.cloneApi(node.data),
+        icon: '<i class="fa fa-clone" style="color:darkorange;font-size: 1.1vw;padding:5px"></i>'
+      }
+    ];
+  }
+
+  viewApi(data: any): void {
+    // Implement view API logic
+  }
+
+  editApi(data: any): void {
+    // Implement edit API logic
+  }
+
+  cloneApi(data: any): void {
+    // Implement clone API logic
+  }
+}
+```
+
+### Step 2: Update the Template in `admin-management.component.html`
+
+```html
+<div class="ag-theme-balham" style="height: 600px; width: 100%;">
+  <ag-grid-angular
+    [gridOptions]="gridOptions"
+    [columnDefs]="columnDefs"
+    [rowData]="rowData"
+    (firstDataRendered)="onFirstDataRendered($event)">
+  </ag-grid-angular>
+</div>
+```
+
+### Step 3: Add Styles for the Context Menu in `admin-management.component.scss`
+
+```scss
+::ng-deep .ag-theme-balham {
+  .ag-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fa-ellipsis-h {
+    cursor: pointer;
+  }
+}
+```
+
+### Step 4: Ensure Correct Event Handling in `admin-management.component.ts`
+
+Ensure the `showContextMenu` method is correctly invoking the context menu rendering:
+
+```typescript
+showContextMenu(event: MouseEvent, rowIndex: number) {
+  event.preventDefault();
+  const node = this.gridOptions.api.getDisplayedRowAtIndex(rowIndex);
+  const contextMenuItems = this.getContextMenuItems({ node });
+  // Render the context menu at the event's position based on contextMenuItems
+}
+```
+
+This approach ensures the context menu only appears when clicking on the actions icon within the specified column, and the menu provides the options "View Record", "Edit Record", and "Clone Record". Adjust the rendering of the context menu based on your needs.
