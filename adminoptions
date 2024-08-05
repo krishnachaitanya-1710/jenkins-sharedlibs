@@ -1,0 +1,170 @@
+To implement the functionality of opening a context menu with options like "View Record", "Edit Record", and "Clone Record", and then performing the respective actions in your Angular application, you'll need to update your context menu item definitions and the associated functions in your component. Here's how you can achieve that:
+
+### Step 1: Define the Context Menu Items
+
+In your `admin-management.component.ts`, define the context menu items and their associated actions:
+
+```typescript
+getContextMenuItems(params: any): any {
+    var result = [
+        {
+            name: 'View Record',
+            action: () => {
+                this.viewApi(params.node.data);
+            },
+            icon: '<i class="fa fa-list-alt" style="color:cadetblue;font-size: 1.1vw;padding:5px"></i>'
+        },
+        {
+            name: 'Edit Record',
+            action: () => {
+                this.editApi(params.node.data);
+            },
+            icon: '<i class="fa fa-pencil-square-o" style="color:darkgreen;font-size: 1.1vw;padding:5px"></i>'
+        },
+        {
+            name: 'Clone Record',
+            action: () => {
+                this.cloneApi(params.node.data);
+            },
+            icon: '<i class="fa fa-clone" style="color:darkorange;font-size: 1.1vw;padding:5px"></i>'
+        }
+    ];
+    return result;
+}
+```
+
+### Step 2: Implement the Action Functions
+
+Add the functions to handle each action (view, edit, clone) in your component:
+
+```typescript
+viewApi(data: any): void {
+    // Open the form with preloaded data for viewing
+    this.apiForm.setValue({
+        appName: data.appName,
+        serviceName: data.serviceName,
+        apiName: data.apiName,
+        label: data.label,
+        endpoint: data.endpoint,
+        method: data.method,
+        parameters: data.parameters.join(', '),
+        keywords: data.keywords.join(', '),
+        context: data.context,
+        requireConfirmation: data.requireConfirmation,
+        useQueryPramsInPost: data.useQueryPramsInPost
+    });
+    this.isView = true;
+    this.showApiForm = true;
+}
+
+editApi(data: any): void {
+    // Open the form with preloaded data for editing
+    this.apiForm.setValue({
+        appName: data.appName,
+        serviceName: data.serviceName,
+        apiName: data.apiName,
+        label: data.label,
+        endpoint: data.endpoint,
+        method: data.method,
+        parameters: data.parameters.join(', '),
+        keywords: data.keywords.join(', '),
+        context: data.context,
+        requireConfirmation: data.requireConfirmation,
+        useQueryPramsInPost: data.useQueryPramsInPost
+    });
+    this.isEdit = true;
+    this.showApiForm = true;
+}
+
+cloneApi(data: any): void {
+    // Open the form with preloaded data for cloning (excluding unique fields)
+    this.apiForm.setValue({
+        appName: data.appName,
+        serviceName: data.serviceName,
+        apiName: '', // Empty for new clone
+        label: data.label,
+        endpoint: data.endpoint,
+        method: data.method,
+        parameters: data.parameters.join(', '),
+        keywords: data.keywords.join(', '),
+        context: data.context,
+        requireConfirmation: data.requireConfirmation,
+        useQueryPramsInPost: data.useQueryPramsInPost
+    });
+    this.isEdit = false; // Ensure this is treated as a new entry
+    this.showApiForm = true;
+}
+```
+
+### Step 3: Update the Form Submission Handler
+
+Ensure your form submission handler can differentiate between new entries, edits, and clones:
+
+```typescript
+onSubmit(apiForm: NgForm): void {
+    console.log("processing the submitted form", apiForm.valid, this.apiForm, apiForm, apiForm.value);
+    if (apiForm.valid) {
+        const newApi = {
+            ...apiForm.value,
+            parameters: apiForm.value.parameters.split(',').map((param: string) => param.trim()),
+            keywords: apiForm.value.keywords.split(',').map((keyword: string) => keyword.trim())
+        };
+        
+        if (this.isEdit) {
+            this.http.put(`${this.apiEndpoint}/${newApi.apiName}`, newApi)
+                .subscribe(response => {
+                    console.log('API updated successfully', response);
+                    this.showSuccessMessage('API updated successfully');
+                    this.loadConfigurations();
+                }, error => {
+                    console.error('Error updating API', error);
+                });
+        } else {
+            this.http.post(this.apiEndpoint, newApi)
+                .subscribe(response => {
+                    console.log('API onboarded successfully', response);
+                    this.showSuccessMessage('API added successfully');
+                    this.loadConfigurations();
+                }, error => {
+                    console.error('Error onboarding API', error);
+                });
+        }
+    }
+    this.closeApiForm();
+}
+```
+
+### Step 4: Modify the HTML Template
+
+Update your HTML template to handle the `isEdit` and `isView` states properly:
+
+```html
+<form #apiForm="ngForm" (ngSubmit)="onSubmit(apiForm)" *ngIf="showApiForm">
+    <div class="form-group">
+        <label for="appName">Application Name</label>
+        <select id="appName" name="appName" [(ngModel)]="selectedApp" (change)="onAppChange(selectedApp)" class="form-control" required [disabled]="isView">
+            <option *ngFor="let app of apps" [value]="app">{{ app }}</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="serviceName">Service Name</label>
+        <select id="serviceName" name="serviceName" [(ngModel)]="selectedService" class="form-control" required [disabled]="isView">
+            <option *ngFor="let service of filteredServices" [value]="service">{{ service }}</option>
+        </select>
+    </div>
+    <!-- Other form fields -->
+    <div class="form-group">
+        <label for="parameters">Parameters</label>
+        <input type="text" id="parameters" name="parameters" [(ngModel)]="parameters" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="keywords">Keywords</label>
+        <input type="text" id="keywords" name="keywords" [(ngModel)]="keywords" class="form-control" required>
+    </div>
+    <!-- More form fields as needed -->
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary" (click)="closeApiForm()">Cancel</button>
+</form>
+```
+
+This approach ensures that the context menu provides the options to view, edit, and clone records, and the respective forms are prefilled and handled correctly based on the user's actions.
