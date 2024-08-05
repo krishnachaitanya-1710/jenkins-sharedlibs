@@ -1,0 +1,109 @@
+To capture parameters and keywords in your form as a list of strings, you can modify your form and `onSubmit` function accordingly. This involves updating your HTML to allow multiple inputs for these fields and then processing those inputs in your component to format them as arrays.
+
+Here's how you can update your form and `onSubmit` function:
+
+### HTML (admin-management.component.html)
+Update the form to allow multiple inputs for `parameters` and `keywords`:
+
+```html
+<div class="modal-body">
+  <form (ngSubmit)="onSubmit(apiForm)" #apiForm="ngForm">
+    <div class="form-group">
+      <label for="appName">Application Name</label>
+      <select id="appName" name="appName" class="form-control" [(ngModel)]="selectedApp" (change)="onAppChange(selectedApp)">
+        <option *ngFor="let app of apps" [value]="app">{{ app }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="serviceName">Service Name</label>
+      <select id="serviceName" name="serviceName" class="form-control" [(ngModel)]="selectedService">
+        <option *ngFor="let service of filteredServices" [value]="service">{{ service }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="apiName">API Name</label>
+      <input type="text" id="apiName" name="apiName" class="form-control" [(ngModel)]="apiName" required>
+    </div>
+    <div class="form-group">
+      <label for="label">Label</label>
+      <input type="text" id="label" name="label" class="form-control" [(ngModel)]="label" required>
+    </div>
+    <div class="form-group">
+      <label for="endpoint">Endpoint</label>
+      <input type="text" id="endpoint" name="endpoint" class="form-control" [(ngModel)]="endpoint" required>
+    </div>
+    <div class="form-group">
+      <label for="method">Method</label>
+      <select id="method" name="method" class="form-control" [(ngModel)]="method" required>
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="parameters">Parameters (comma separated)</label>
+      <input type="text" id="parameters" name="parameters" class="form-control" [(ngModel)]="parameters">
+    </div>
+    <div class="form-group">
+      <label for="keywords">Keywords (comma separated)</label>
+      <input type="text" id="keywords" name="keywords" class="form-control" [(ngModel)]="keywords">
+    </div>
+    <div class="form-group">
+      <label for="context">Context</label>
+      <input type="text" id="context" name="context" class="form-control" [(ngModel)]="context">
+    </div>
+    <div class="form-group">
+      <label for="requireConfirmation">Require Confirmation?</label>
+      <input type="checkbox" id="requireConfirmation" name="requireConfirmation" class="form-control" [(ngModel)]="requireConfirmation">
+    </div>
+    <div class="form-group">
+      <label for="useQueryPramsInPost">Use Query Params In Post API?</label>
+      <input type="checkbox" id="useQueryPramsInPost" name="useQueryPramsInPost" class="form-control" [(ngModel)]="useQueryPramsInPost">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary" (click)="closeApiForm()">Cancel</button>
+  </form>
+</div>
+```
+
+### TypeScript (admin-management.component.ts)
+Update the `onSubmit` function to process `parameters` and `keywords` as arrays:
+
+```typescript
+onSubmit(apiForm: NgForm): void {
+  if (apiForm.valid) {
+    const formValue = apiForm.value;
+    const newApi = {
+      ...formValue,
+      parameters: formValue.parameters ? formValue.parameters.split(',').map((param: string) => param.trim()) : [],
+      keywords: formValue.keywords ? formValue.keywords.split(',').map((keyword: string) => keyword.trim()) : []
+    };
+
+    if (this.isEdit) {
+      this.showSuccessMessage('API updated successfully');
+    } else {
+      this.http.post(this.apiEndpoint, newApi).subscribe(
+        response => {
+          console.log('API onboarded successfully', response);
+          this.showSuccessMessage('API added successfully');
+        },
+        error => {
+          console.error('Error onboarding service', error);
+        }
+      );
+    }
+    this.closeApiForm();
+  }
+}
+```
+
+### Explanation
+1. **Form HTML**: Added input fields for `parameters` and `keywords` to accept comma-separated values.
+2. **onSubmit Function**: 
+   - Retrieves form values.
+   - Splits the `parameters` and `keywords` fields by commas and trims whitespace to create arrays.
+   - Constructs the `newApi` object with these arrays and other form values.
+   - Sends the `newApi` object to the backend API.
+
+This setup ensures that the `parameters` and `keywords` fields are properly captured and sent as arrays in the API request.
