@@ -1,0 +1,200 @@
+To enhance your audit logs component to display messages more effectively and add functionality to view the message history in a user-friendly format, you can follow these steps:
+
+1. **Modify HTML to Include an Action Button for Viewing History:**
+   Add a button to each row in the audit logs table to allow users to view the history.
+
+2. **Create a Method to Open a Modal with the History:**
+   Implement a method to open a modal or a popover that displays the message history in a readable format.
+
+3. **Style the Messages to Differentiate Between Bot and Self Messages:**
+   Apply different styles to messages based on their type (bot or self).
+
+Here's a sample implementation based on your provided code and requirements.
+
+### HTML Changes
+Add a column for actions in your `sa-audit-log.component.html` file:
+
+```html
+<div class="button-group">
+    <button class="icon-button" title="Refresh" (click)="refreshData()"><i class="fa fa-refresh"></i></button>
+    <button class="icon-button" title="Export API Data in JSON" (click)="exportData()"><i class="fa fa-download"></i></button>
+    <input class="search-input" type="search" placeholder="Search..." (input)="onQuickFilterChanged($event)">
+</div>
+
+<ag-grid-angular
+    id="viewSummaryTbl"
+    class="ag-theme-balham"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [sideBar]="sideBar"
+    [enableRangeSelection]="true"
+    [enableCharts]="true"
+    [animateRows]="true"
+    [pagination]="true"
+    [paginationPageSize]="10"
+    [getRowStyle]="getRowStyle"
+    (gridReady)="onGridReady($event)"
+    (cellClicked)="onCellClicked($event)">
+</ag-grid-angular>
+
+<!-- Add a modal to display the message history -->
+<ng-template #messageHistoryModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Message History</h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div *ngFor="let message of selectedMessages">
+      <div [ngClass]="{'bot-message': message.type === 'bot-message', 'self-message': message.type === 'self-message'}">
+        <p>{{ message.content }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+  </div>
+</ng-template>
+```
+
+### TypeScript Changes
+Update your `sa-audit-log.component.ts` file:
+
+```typescript
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { HttpClient } from '@angular/common/http';
+import { SmartAssistantAuditEntity } from './smart-assistant-audit-entity.model'; // Update this import as per your model location
+
+@Component({
+  selector: 'app-sa-audit-log',
+  templateUrl: './sa-audit-log.component.html',
+  styleUrls: ['./sa-audit-log.component.scss']
+})
+export class SaAuditLogComponent implements OnInit {
+  @ViewChild('messageHistoryModal') messageHistoryModal: TemplateRef<any>;
+  auditLogUri: string = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+  columnDefs: any[] = [];
+  rowData: SmartAssistantAuditEntity[] = [];
+  sideBar = { position: 'left' };
+  defaultColDef = {
+    flex: 1,
+    minWidth: 100,
+    filter: true,
+    sortable: true,
+    resizable: true
+  };
+  selectedMessages: any[] = [];
+  gridApi: any;
+  gridColumnApi: any;
+
+  constructor(private http: HttpClient, private modalService: NgbModal) {}
+
+  ngOnInit(): void {
+    this.processTableData();
+  }
+
+  processTableData(): void {
+    this.generateColumnDefs();
+    this.generateRowData();
+  }
+
+  generateColumnDefs(): void {
+    this.columnDefs = [
+      { headerName: 'Session ID', field: 'sessionId', sortable: true, filter: true },
+      { headerName: 'Employee ID', field: 'employeeId', sortable: true, filter: true },
+      { headerName: 'LAN ID', field: 'lanId', sortable: true, filter: true },
+      { headerName: 'API Name', field: 'apiName', sortable: true, filter: true },
+      { headerName: 'Creation Time', field: 'creationDateTime', sortable: true, filter: true },
+      { headerName: 'Server IP', field: 'serverIp', sortable: true, filter: true },
+      { headerName: 'Client IP', field: 'clientIp', sortable: true, filter: true },
+      {
+        headerName: 'Messages',
+        field: 'messages',
+        sortable: true,
+        filter: true,
+        autoHeight: true,
+        cellRenderer: (params: any) => {
+          const messages = params.value;
+          if (!messages || messages.length === 0) return '';
+          return `<span style="cursor: pointer; color: blue;" (click)="showMessageHistory(${params.rowIndex})">View History</span>`;
+        }
+      }
+    ];
+  }
+
+  generateRowData(): void {
+    this.getAllLogs().subscribe((logs: SmartAssistantAuditEntity[]) => {
+      this.rowData = logs;
+    });
+  }
+
+  getAllLogs(): Observable<SmartAssistantAuditEntity[]> {
+    return this.http.get<SmartAssistantAuditEntity[]>(this.auditLogUri);
+  }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+  }
+
+  onQuickFilterChanged(event: any): void {
+    this.gridApi.setQuickFilter(event.target.value);
+  }
+
+  onCellClicked(event: any): void {
+    if (event.colDef.field === 'messages') {
+      this.showMessageHistory(event.rowIndex);
+    }
+  }
+
+  showMessageHistory(rowIndex: number): void {
+    const selectedRow = this.gridApi.getDisplayedRowAtIndex(rowIndex).data;
+    this.selectedMessages = selectedRow.messages;
+    this.modalService.open(this.messageHistoryModal, { size: 'lg' });
+  }
+
+  refreshData(): void {
+    this.generateRowData();
+  }
+
+  exportData(): void {
+    const dataStr = JSON.stringify(this.rowData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'audit-logs.json';
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  }
+}
+```
+
+### CSS Changes
+Add styles to differentiate between bot and self messages in your `sa-audit-log.component.scss`:
+
+```scss
+.bot-message {
+  background-color: #e0f7fa;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.self-message {
+  background-color: #fff9c4;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+```
+
+### Notes:
+- Ensure you have the `NgbModal` module imported in your Angular module if you haven't already.
+- Adjust the `cellRenderer` method in `generateColumnDefs` to suit your needs if you need a different approach for showing the message history.
+- The `showMessageHistory` method opens a modal with the message history, and you can customize it further based on your requirements.
+
+This implementation ensures you have an actionable button to view message history in a modal and differentiates the display between bot and self messages.
