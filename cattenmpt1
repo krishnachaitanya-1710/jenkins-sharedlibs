@@ -1,0 +1,199 @@
+To generate bar graphs and other types of charts to showcase the usage patterns of the Smart Assistant based on the audit log data, we can use the Angular framework along with a charting library like `ng2-charts`, which is based on Chart.js. Here's a step-by-step guide on how to set up and implement these charts in your reports component.
+
+### Step 1: Install Chart.js and ng2-charts
+First, you need to install Chart.js and ng2-charts in your Angular project. You can do this by running the following command:
+
+```bash
+npm install chart.js ng2-charts
+```
+
+### Step 2: Import ChartModule
+Next, you need to import the `ChartModule` in your `AppModule` or the relevant module where your reports component is declared.
+
+```typescript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { ChartsModule } from 'ng2-charts';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    // other components
+  ],
+  imports: [
+    BrowserModule,
+    ChartsModule,
+    // other modules
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### Step 3: Create the Reports Component
+If you don't already have a reports component, create one:
+
+```bash
+ng generate component reports
+```
+
+### Step 4: Prepare the Data
+Modify the reports component to fetch and prepare the audit log data for charting. Here's an example of how you might set this up:
+
+#### reports.component.ts
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  public barChartOptions = {
+    scaleShowVerticalLines: false,
+    responsive: true
+  };
+  public barChartLabels: string[] = [];
+  public barChartType = 'bar';
+  public barChartLegend = true;
+  public barChartData: any[] = [];
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.loadAuditLogData();
+  }
+
+  loadAuditLogData(): void {
+    const apiUrl = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs'; // Replace with your API endpoint
+    this.http.get<any[]>(apiUrl).subscribe(data => {
+      this.processData(data);
+    });
+  }
+
+  processData(data: any[]): void {
+    const apiUsageCount = {};
+    data.forEach(log => {
+      const apiName = log.apiName;
+      if (apiUsageCount[apiName]) {
+        apiUsageCount[apiName]++;
+      } else {
+        apiUsageCount[apiName] = 1;
+      }
+    });
+
+    this.barChartLabels = Object.keys(apiUsageCount);
+    this.barChartData = [
+      { data: Object.values(apiUsageCount), label: 'API Usage Count' }
+    ];
+  }
+}
+```
+
+### Step 5: Create the Chart Template
+Add the template for the bar chart in `reports.component.html`.
+
+#### reports.component.html
+```html
+<div class="container">
+  <h2>API Usage Report</h2>
+  <div style="display: block;">
+    <canvas baseChart
+            [datasets]="barChartData"
+            [labels]="barChartLabels"
+            [options]="barChartOptions"
+            [legend]="barChartLegend"
+            [chartType]="barChartType">
+    </canvas>
+  </div>
+</div>
+```
+
+### Step 6: Add Styles (Optional)
+You can add some styles to improve the appearance of your reports component.
+
+#### reports.component.scss
+```scss
+.container {
+  margin-top: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+```
+
+### Step 7: Additional Charts
+To add more types of charts (e.g., line charts, pie charts), you can follow similar steps. Here’s an example of adding a line chart for daily usage trends:
+
+#### Add to reports.component.ts
+```typescript
+public lineChartData: Array<any> = [];
+public lineChartLabels: Array<any> = [];
+
+processData(data: any[]): void {
+  const apiUsageCount = {};
+  const dailyUsage = {};
+
+  data.forEach(log => {
+    const apiName = log.apiName;
+    const date = new Date(log.creationDateTime).toLocaleDateString();
+    
+    if (apiUsageCount[apiName]) {
+      apiUsageCount[apiName]++;
+    } else {
+      apiUsageCount[apiName] = 1;
+    }
+
+    if (dailyUsage[date]) {
+      dailyUsage[date]++;
+    } else {
+      dailyUsage[date] = 1;
+    }
+  });
+
+  this.barChartLabels = Object.keys(apiUsageCount);
+  this.barChartData = [
+    { data: Object.values(apiUsageCount), label: 'API Usage Count' }
+  ];
+
+  this.lineChartLabels = Object.keys(dailyUsage);
+  this.lineChartData = [
+    { data: Object.values(dailyUsage), label: 'Daily Usage' }
+  ];
+}
+```
+
+#### Add to reports.component.html
+```html
+<div class="container">
+  <h2>API Usage Report</h2>
+  <div style="display: block;">
+    <canvas baseChart
+            [datasets]="barChartData"
+            [labels]="barChartLabels"
+            [options]="barChartOptions"
+            [legend]="barChartLegend"
+            [chartType]="barChartType">
+    </canvas>
+  </div>
+
+  <h2>Daily Usage Report</h2>
+  <div style="display: block;">
+    <canvas baseChart
+            [datasets]="lineChartData"
+            [labels]="lineChartLabels"
+            [options]="barChartOptions"
+            [legend]="barChartLegend"
+            [chartType]="'line'">
+    </canvas>
+  </div>
+</div>
+```
+
+By following these steps, you should be able to create and display various charts that visualize the usage patterns of your Smart Assistant. You can customize and extend this example to include additional charts and data processing as needed.
