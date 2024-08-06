@@ -1,0 +1,102 @@
+To ensure that `this.apiForm.setValue` works correctly, it's important to use `FormGroup` for better control over your forms. Here's how you can modify your setup to ensure it works:
+
+1. **Ensure Form Initialization:**
+   Initialize the form correctly in your component using `FormBuilder` from `@angular/forms`:
+
+   ```typescript
+   import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+   export class AdminManagementComponent implements OnInit {
+     apiForm: FormGroup;
+
+     constructor(private fb: FormBuilder) {}
+
+     ngOnInit(): void {
+       this.apiForm = this.fb.group({
+         appName: ['', Validators.required],
+         serviceName: ['', Validators.required],
+         apiName: ['', Validators.required],
+         label: ['', Validators.required],
+         endpoint: ['', Validators.required],
+         method: ['', Validators.required],
+         parameters: [''],
+         keywords: [''],
+         context: [''],
+         requireConfirmation: [false],
+         useQueryPramsInPost: [false]
+       });
+
+       // Load initial data if needed
+       this.loadConfigurations();
+     }
+
+     viewApi(data: any): void {
+       console.log("Invoking view records operation", data);
+       const apiConfig = this.findApiConfig(data.appName, data.serviceName, data.apiName);
+       if (apiConfig) {
+         console.log("API Config found:", apiConfig);
+         this.apiForm.setValue({
+           appName: data.appName,
+           serviceName: data.serviceName,
+           apiName: apiConfig.name,
+           label: apiConfig.label,
+           endpoint: apiConfig.endpoint,
+           method: apiConfig.method,
+           parameters: apiConfig.parameters ? apiConfig.parameters.join(', ') : '',
+           keywords: apiConfig.keywords ? apiConfig.keywords.join(', ') : '',
+           context: apiConfig.context,
+           requireConfirmation: apiConfig.requireConfirmation,
+           useQueryPramsInPost: apiConfig.useQueryPramsInPost
+         });
+         this.isView = true;
+         this.showApiForm = true;
+       } else {
+         console.error('API configuration not found.');
+       }
+     }
+
+     findApiConfig(appName: string, serviceName: string, apiName: string): any {
+       const appConfig = this.configData[appName];
+       if (appConfig) {
+         const serviceConfig = appConfig.services.find((service: any) => service.name === serviceName);
+         if (serviceConfig) {
+           return serviceConfig.apis.find((api: any) => api.name === apiName);
+         }
+       }
+       return null;
+     }
+
+     // Other methods like loadConfigurations, setServicesAndApis, etc.
+   }
+   ```
+
+2. **Modify HTML for Form Binding:**
+   Ensure your HTML form uses `formGroup` for binding:
+
+   ```html
+   <form [formGroup]="apiForm" (ngSubmit)="onSubmit(apiForm)">
+     <div class="form-group">
+       <label for="appName">Application Name</label>
+       <select id="appName" formControlName="appName" class="form-control">
+         <option *ngFor="let app of apps" [value]="app">{{ app }}</option>
+       </select>
+     </div>
+     <div class="form-group">
+       <label for="serviceName">Service Name</label>
+       <select id="serviceName" formControlName="serviceName" class="form-control">
+         <option *ngFor="let service of filteredServices" [value]="service">{{ service }}</option>
+       </select>
+     </div>
+     <div class="form-group">
+       <label for="apiName">API Name</label>
+       <input type="text" id="apiName" formControlName="apiName" class="form-control">
+     </div>
+     <!-- Repeat for other form fields -->
+     <button type="submit" class="btn btn-primary">Submit</button>
+   </form>
+   ```
+
+3. **Handle Optional Fields:**
+   Ensure your form initialization and `setValue` calls handle optional fields correctly. Use a fallback value for optional fields to prevent undefined errors.
+
+By following these steps, you can ensure `setValue` correctly updates the form controls, and your form displays the API configuration data as expected. This approach provides more control and better error handling for your form.
