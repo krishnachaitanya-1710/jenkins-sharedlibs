@@ -1,0 +1,133 @@
+To achieve the desired format for the message history, we need to escape HTML tags and apply different styles to messages from the bot and the user. Here’s how you can do it:
+
+1. **Modify the HTML template to display messages with different styles**:
+    - Use `ngClass` to apply different styles based on the message type (`bot-message` or `self-message`).
+    - Use Angular's built-in sanitization to escape HTML content.
+
+2. **Update the component to process and style the messages**:
+    - Use a method to sanitize and escape HTML content.
+
+### Step-by-Step Implementation
+
+**1. HTML Template (audit-log.component.html)**:
+
+```html
+<!-- Add a new modal for displaying message history -->
+<div *ngIf="showMessageHistory" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Message History</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeMessageHistory()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div *ngFor="let message of currentMessageHistory">
+          <p [ngClass]="{'bot-message': message.type === 'bot-message', 'self-message': message.type === 'self-message'}">
+            {{message.content | escapeHtml}}
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeMessageHistory()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add CSS classes for styling messages -->
+<style>
+  .bot-message {
+    color: blue;
+    font-weight: bold;
+  }
+  .self-message {
+    color: green;
+    font-style: italic;
+  }
+</style>
+```
+
+**2. Component Logic (audit-log.component.ts)**:
+
+```typescript
+import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-audit-log',
+  templateUrl: './audit-log.component.html',
+  styleUrls: ['./audit-log.component.scss']
+})
+export class AuditLogComponent implements OnInit {
+  public showMessageHistory: boolean = false;
+  public currentMessageHistory: any[] = [];
+  private auditLogUri = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.loadAuditLogs();
+  }
+
+  loadAuditLogs(): void {
+    this.http.get<any[]>(this.auditLogUri).subscribe(logs => {
+      this.currentMessageHistory = logs.map(log => ({
+        ...log,
+        messages: JSON.parse(log.messages)
+      }));
+    });
+  }
+
+  showMessageHistory(messages: any[]): void {
+    this.currentMessageHistory = messages;
+    this.showMessageHistory = true;
+  }
+
+  closeMessageHistory(): void {
+    this.showMessageHistory = false;
+  }
+}
+
+// Pipe to escape HTML content
+@Pipe({name: 'escapeHtml'})
+export class EscapeHtmlPipe implements PipeTransform {
+  constructor(private sanitizer: DomSanitizer) {}
+  transform(value: string) {
+    return this.sanitizer.sanitize(1, value.replace(/<[^>]*>?/gm, ''));
+  }
+}
+```
+
+**3. Display Button Logic in audit-log.component.html**:
+
+```html
+<!-- Add button to each row to show message history -->
+<ag-grid-angular
+  #agGrid
+  style="width: 100%; height: 600px;"
+  class="ag-theme-balham"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  (gridReady)="onGridReady($event)">
+</ag-grid-angular>
+
+<!-- Use cellRenderer to add a button in each row to view messages -->
+{
+  headerName: 'Messages',
+  field: 'messages',
+  cellRenderer: (params) => {
+    return `<button (click)="showMessageHistory(${params.value})">View Messages</button>`;
+  }
+}
+```
+
+### Explanation:
+- **HTML Template**: The template defines the modal to display the message history. It uses `ngClass` to apply different styles to bot and user messages.
+- **Component Logic**: The component fetches the audit logs, parses the messages, and stores them in `currentMessageHistory`. It also includes a method to sanitize and escape HTML content using Angular's built-in `DomSanitizer`.
+- **Display Button Logic**: The `ag-grid` column definition includes a button that triggers the display of message history in the modal.
+
+This implementation will show the message history in a modal with different colors for bot and user messages and escape any HTML content to display it as plain text.
