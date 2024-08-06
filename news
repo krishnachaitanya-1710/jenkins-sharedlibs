@@ -1,0 +1,188 @@
+Sure, I can help you integrate the required changes step-by-step into your existing code to achieve the desired functionality for viewing message history in a formatted way. Here is the end-to-end code integration.
+
+### Step 1: HTML Template for Audit Log Component
+
+Add a modal for displaying message history and style it accordingly.
+
+```html
+<!-- sa-audit-log.component.html -->
+<div *ngIf="showMessageHistory" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Message History</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeMessageHistory()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div *ngFor="let message of currentMessageHistory">
+          <p [ngClass]="{'bot-message': message.type === 'bot-message', 'self-message': message.type === 'self-message'}">
+            {{ message.content | escapeHtml }}
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeMessageHistory()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add CSS classes for styling messages -->
+<style>
+  .bot-message {
+    color: blue;
+    font-weight: bold;
+  }
+  .self-message {
+    color: green;
+    font-style: italic;
+  }
+</style>
+```
+
+### Step 2: Component Logic to Handle Message History
+
+Add the necessary logic to handle fetching and displaying message history.
+
+```typescript
+// sa-audit-log.component.ts
+import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-sa-audit-log',
+  templateUrl: './sa-audit-log.component.html',
+  styleUrls: ['./sa-audit-log.component.scss']
+})
+export class SaAuditLogComponent implements OnInit {
+  public showMessageHistory: boolean = false;
+  public currentMessageHistory: any[] = [];
+  private auditLogUri = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+  columnDefs: any[] = [];
+  rowData: any[] = [];
+  defaultColDef: any = {
+    flex: 1,
+    minWidth: 100,
+    filter: true,
+    sortable: true,
+    resizable: true
+  };
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.processTableData();
+  }
+
+  processTableData(): void {
+    this.generateColumnDefs();
+    this.generateRowData();
+  }
+
+  generateColumnDefs(): void {
+    this.columnDefs = [
+      { headerName: 'Session ID', field: 'sessionId', sortable: true, filter: true },
+      { headerName: 'Employee ID', field: 'employeeId', sortable: true, filter: true },
+      { headerName: 'LAN ID', field: 'lanId', sortable: true, filter: true },
+      { headerName: 'API Name', field: 'apiName', sortable: true, filter: true },
+      { headerName: 'Creation Time', field: 'creationDateTime', sortable: true, filter: true },
+      { headerName: 'Server IP', field: 'serverIp', sortable: true, filter: true },
+      { headerName: 'Client IP', field: 'clientIp', sortable: true, filter: true },
+      {
+        headerName: 'Messages',
+        field: 'messages',
+        cellRenderer: (params) => {
+          return `<button (click)="showMessageHistory(${params.value})">View Messages</button>`;
+        }
+      }
+    ];
+  }
+
+  generateRowData(): void {
+    this.getAllLogs().subscribe(logs => {
+      this.rowData = logs.map(log => ({
+        ...log,
+        messages: JSON.parse(log.messages)
+      }));
+    });
+  }
+
+  getAllLogs() {
+    return this.http.get<any[]>(this.auditLogUri);
+  }
+
+  showMessageHistory(messages: any[]): void {
+    this.currentMessageHistory = messages;
+    this.showMessageHistory = true;
+  }
+
+  closeMessageHistory(): void {
+    this.showMessageHistory = false;
+  }
+}
+
+// Pipe to escape HTML content
+@Pipe({name: 'escapeHtml'})
+export class EscapeHtmlPipe implements PipeTransform {
+  constructor(private sanitizer: DomSanitizer) {}
+  transform(value: string) {
+    return this.sanitizer.sanitize(1, value.replace(/<[^>]*>?/gm, ''));
+  }
+}
+```
+
+### Step 3: Update the Main Module
+
+Ensure that you declare the new pipe in your module.
+
+```typescript
+// app.module.ts or the relevant module file
+import { EscapeHtmlPipe } from './sa-audit-log.component';
+
+@NgModule({
+  declarations: [
+    // other components,
+    EscapeHtmlPipe
+  ],
+  // other configurations
+})
+export class AppModule { }
+```
+
+### Step 4: Update the Styles for Better Visibility
+
+In your global styles or component-specific styles, ensure the modal is styled correctly.
+
+```css
+/* Add this to your global styles.css or styles.scss */
+.modal {
+  display: block;
+  background: rgba(0, 0, 0, 0.5);
+}
+.modal-dialog {
+  margin: 10% auto;
+}
+```
+
+### Explanation:
+
+1. **HTML Template**: 
+   - A modal is created to display the message history.
+   - The `ngClass` directive is used to apply different styles to `bot-message` and `self-message`.
+   - The pipe `escapeHtml` is used to escape HTML tags in the content.
+
+2. **Component Logic**:
+   - The `SaAuditLogComponent` handles fetching audit logs and displaying the message history.
+   - A new method `showMessageHistory` sets the current message history and opens the modal.
+   - The `EscapeHtmlPipe` is created to sanitize and escape HTML content.
+
+3. **Module Update**:
+   - The `EscapeHtmlPipe` is declared in the module to be used in the component.
+
+4. **Styles**:
+   - Styles for the modal and messages are added to make the UI look better.
+
+This setup should allow you to view message histories in a formatted manner with different styles for bot and user messages and ensure HTML content is displayed as plain text.
