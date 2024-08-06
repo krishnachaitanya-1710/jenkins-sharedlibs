@@ -1,0 +1,132 @@
+To simplify the process of editing or viewing the API configurations using the existing `configData` without creating a new API data object, you can directly find and use the relevant API configuration from the `configData`. Here’s how you can achieve this:
+
+1. **Ensure `configData` is properly structured:** Make sure your `configData` is structured in a way that allows easy access to the API configurations. It should be something like this:
+    ```typescript
+    {
+      "appName1": {
+        "services": [
+          {
+            "name": "serviceName1",
+            "apis": [
+              {
+                "name": "apiName1",
+                "label": "API Label",
+                "endpoint": "/api/endpoint",
+                "method": "GET",
+                "parameters": ["param1", "param2"],
+                "keywords": ["keyword1", "keyword2"],
+                "context": "API Context",
+                "requireConfirmation": true,
+                "useQueryPramsInPost": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+    ```
+
+2. **Modify `viewApi` and `editApi` functions to access `configData`:**
+
+   ```typescript
+   viewApi(data: any): void {
+     console.log("Invoking view records operation", data);
+     const apiConfig = this.findApiConfig(data.appName, data.serviceName, data.apiName);
+     if (apiConfig) {
+       this.apiForm.setValue({
+         appName: data.appName,
+         serviceName: data.serviceName,
+         apiName: apiConfig.name,
+         label: apiConfig.label,
+         endpoint: apiConfig.endpoint,
+         method: apiConfig.method,
+         parameters: apiConfig.parameters.join(', '),
+         keywords: apiConfig.keywords.join(', '),
+         context: apiConfig.context,
+         requireConfirmation: apiConfig.requireConfirmation,
+         useQueryPramsInPost: apiConfig.useQueryPramsInPost,
+       });
+       this.isView = true;
+       this.showApiForm = true;
+     } else {
+       console.error('API configuration not found.');
+     }
+   }
+
+   editApi(data: any): void {
+     console.log("Invoking edit records operation", data);
+     const apiConfig = this.findApiConfig(data.appName, data.serviceName, data.apiName);
+     if (apiConfig) {
+       this.apiForm.setValue({
+         appName: data.appName,
+         serviceName: data.serviceName,
+         apiName: apiConfig.name,
+         label: apiConfig.label,
+         endpoint: apiConfig.endpoint,
+         method: apiConfig.method,
+         parameters: apiConfig.parameters.join(', '),
+         keywords: apiConfig.keywords.join(', '),
+         context: apiConfig.context,
+         requireConfirmation: apiConfig.requireConfirmation,
+         useQueryPramsInPost: apiConfig.useQueryPramsInPost,
+       });
+       this.isEdit = true;
+       this.showApiForm = true;
+     } else {
+       console.error('API configuration not found.');
+     }
+   }
+
+   findApiConfig(appName: string, serviceName: string, apiName: string): any {
+     const appConfig = this.configData[appName];
+     if (appConfig) {
+       const serviceConfig = appConfig.services.find((service: any) => service.name === serviceName);
+       if (serviceConfig) {
+         return serviceConfig.apis.find((api: any) => api.name === apiName);
+       }
+     }
+     return null;
+   }
+   ```
+
+3. **Update `setServicesAndApis` to correctly populate the dropdowns:**
+
+   ```typescript
+   setServicesAndApis(data: any): void {
+     console.log("data config", data);
+     this.apps = Object.keys(data);
+     this.services = {};
+     this.apis = {};
+
+     this.apps.forEach((app: string) => {
+       this.services[app] = data[app].services.map((service: any) => service.name);
+       data[app].services.forEach((service: any) => {
+         this.apis[service.name] = service.apis.map((api: any) => api.name);
+       });
+     });
+
+     console.log("checking for services", this.services);
+     console.log("checking for apis", this.apis);
+     this.generateColumnDefs(data);
+     this.generateRowData(data);
+   }
+   ```
+
+4. **HTML modifications to ensure dropdowns are populated correctly:**
+
+   ```html
+   <div class="form-group">
+     <label for="appName">Application Name</label>
+     <select id="appName" name="appName" class="form-control" [(ngModel)]="selectedApp" (change)="onAppChange(selectedApp)">
+       <option *ngFor="let app of apps" [value]="app">{{ app }}</option>
+     </select>
+   </div>
+   <div class="form-group">
+     <label for="serviceName">Service Name</label>
+     <select id="serviceName" name="serviceName" class="form-control" [(ngModel)]="selectedService">
+       <option *ngFor="let service of filteredServices" [value]="service">{{ service }}</option>
+     </select>
+   </div>
+   ```
+
+With these changes, you can simplify the data handling process by leveraging the existing `configData` and directly accessing the necessary API configurations for viewing or editing. This approach avoids the need to create new API data objects, ensuring the integrity of your existing configuration.
