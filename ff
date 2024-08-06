@@ -1,0 +1,168 @@
+Switching from `NgForm` to `FormGroup` will indeed change how you handle forms in Angular, but it will also provide more flexibility and control over the form validation and data handling. Here's how you can update your code to use `FormGroup` instead of `NgForm`:
+
+1. **Import `FormBuilder` and `FormGroup` from Angular forms**:
+
+    ```typescript
+    import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+    ```
+
+2. **Declare and initialize the `FormGroup`**:
+
+    In your component class, declare the form as a `FormGroup` and initialize it in the constructor using `FormBuilder`:
+
+    ```typescript
+    export class AdminManagementComponent implements OnInit {
+        apiForm: FormGroup;
+
+        constructor(private fb: FormBuilder) { }
+
+        ngOnInit(): void {
+            this.apiForm = this.fb.group({
+                appName: ['', Validators.required],
+                serviceName: ['', Validators.required],
+                apiName: ['', Validators.required],
+                label: ['', Validators.required],
+                endpoint: ['', Validators.required],
+                method: ['', Validators.required],
+                parameters: [''],
+                keywords: [''],
+                context: [''],
+                requireConfirmation: [false],
+                useQueryPramsInPost: [false]
+            });
+
+            // Load configurations
+            this.loadConfigurations();
+        }
+
+        // Load configurations
+        loadConfigurations(): void {
+            this.http.get(this.configDataEndpoint).subscribe(
+                (data: any) => {
+                    this.configData = data;
+                    this.apps = Object.keys(data);
+                    this.setServicesAndApis(data);
+                },
+                error => {
+                    console.error('Error loading configurations', error);
+                }
+            );
+        }
+
+        // Set services and APIs
+        setServicesAndApis(data: any): void {
+            // Your logic to set services and APIs
+        }
+
+        // On form submit
+        onSubmit(): void {
+            if (this.apiForm.valid) {
+                const formData = this.apiForm.value;
+                formData.parameters = formData.parameters.split(',').map(param => param.trim());
+                formData.keywords = formData.keywords.split(',').map(keyword => keyword.trim());
+
+                this.http.post(this.onboardApiEndpoint, formData).subscribe(
+                    response => {
+                        console.log('API onboarded successfully', response);
+                        this.showSuccessMessage('API added successfully');
+                    },
+                    error => {
+                        console.error('Error onboarding API', error);
+                    }
+                );
+            }
+        }
+
+        // View API
+        viewApi(data: any): void {
+            this.apiForm.patchValue({
+                appName: data.appName,
+                serviceName: data.serviceName,
+                apiName: data.apiName,
+                label: data.label,
+                endpoint: data.endpoint,
+                method: data.method,
+                parameters: data.parameters.join(', '),
+                keywords: data.keywords.join(', '),
+                context: data.context,
+                requireConfirmation: data.requireConfirmation,
+                useQueryPramsInPost: data.useQueryPramsInPost
+            });
+            this.isView = true;
+            this.showApiForm = true;
+        }
+
+        // Edit API
+        editApi(data: any): void {
+            this.apiForm.patchValue({
+                appName: data.appName,
+                serviceName: data.serviceName,
+                apiName: data.apiName,
+                label: data.label,
+                endpoint: data.endpoint,
+                method: data.method,
+                parameters: data.parameters.join(', '),
+                keywords: data.keywords.join(', '),
+                context: data.context,
+                requireConfirmation: data.requireConfirmation,
+                useQueryPramsInPost: data.useQueryPramsInPost
+            });
+            this.isEdit = true;
+            this.showApiForm = true;
+        }
+    }
+    ```
+
+3. **Update your HTML form to use reactive forms**:
+
+    ```html
+    <form [formGroup]="apiForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+            <label for="appName">Application Name</label>
+            <input type="text" id="appName" formControlName="appName" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="serviceName">Service Name</label>
+            <input type="text" id="serviceName" formControlName="serviceName" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="apiName">API Name</label>
+            <input type="text" id="apiName" formControlName="apiName" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="label">Label</label>
+            <input type="text" id="label" formControlName="label" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="endpoint">Endpoint</label>
+            <input type="text" id="endpoint" formControlName="endpoint" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="method">Method</label>
+            <input type="text" id="method" formControlName="method" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="parameters">Parameters</label>
+            <input type="text" id="parameters" formControlName="parameters" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="keywords">Keywords</label>
+            <input type="text" id="keywords" formControlName="keywords" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="context">Context</label>
+            <input type="text" id="context" formControlName="context" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="requireConfirmation">Require Confirmation</label>
+            <input type="checkbox" id="requireConfirmation" formControlName="requireConfirmation" />
+        </div>
+        <div class="form-group">
+            <label for="useQueryPramsInPost">Use Query Params In Post</label>
+            <input type="checkbox" id="useQueryPramsInPost" formControlName="useQueryPramsInPost" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    ```
+
+By switching to `FormGroup`, you gain more control over form validation, error handling, and data manipulation, making it easier to maintain and scale your application.
