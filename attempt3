@@ -1,0 +1,249 @@
+To fix the issue with the message display and to format the message history effectively by showing the difference between smart assistant (bot-message) and user message (self-message), follow these steps:
+
+1. **Modify the Component Code**:
+   Update the component to handle the message formatting and displaying logic.
+
+2. **Modify the HTML Template**:
+   Update the HTML template to include the logic for showing the "View" button for messages and for opening a modal to show the formatted message history.
+
+Here’s how you can implement it:
+
+### Step 1: Update the TypeScript Component
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+export interface Message {
+  type: 'self-message' | 'bot-message';
+  content: string;
+  timestamp: string;
+  actions: boolean;
+  status: string;
+  enableDownload: boolean;
+  needsConfirmation: boolean;
+  createSupportTicket: boolean;
+  isTyping: boolean;
+  contentType: string;
+}
+
+export interface SmartAssistantAuditEntity {
+  id: number;
+  sessionId: number;
+  employeeId: number;
+  lanId: string;
+  messages: Message[];
+  creationDateTime: string;
+  updationDateTime: string;
+  serverIp: number;
+  clientIp: number;
+}
+
+@Component({
+  selector: 'app-sa-audit-log',
+  templateUrl: './sa-audit-log.component.html',
+  styleUrls: ['./sa-audit-log.component.scss']
+})
+export class SaAuditLogComponent implements OnInit {
+  auditLogUri: string = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+  columnDefs: any[] = [];
+  rowData: SmartAssistantAuditEntity[] = [];
+  sideBar = { position: 'left' };
+  gridApi: any;
+  gridColumnApi: any;
+  defaultColDef = {
+    flex: 1,
+    minWidth: 100,
+    filter: true,
+    sortable: true,
+    resizable: true
+  };
+  paginationPageSize = 10;
+  gradient: boolean = false;
+
+  selectedLogMessages: Message[] = [];
+  showMessageHistory: boolean = false;
+
+  constructor(private http: HttpClient) { }
+
+  ngOnInit(): void {
+    this.processTableData();
+  }
+
+  processTableData(): void {
+    this.generateColumnDefs();
+    this.generateRowData();
+  }
+
+  generateColumnDefs(): void {
+    this.columnDefs = [
+      { headerName: 'Session ID', field: 'sessionId', sortable: true, filter: true },
+      { headerName: 'Employee ID', field: 'employeeId', sortable: true, filter: true },
+      { headerName: 'LAN ID', field: 'lanId', sortable: true, filter: true },
+      { headerName: 'API Name', field: 'apiName', sortable: true, filter: true },
+      { headerName: 'Creation Time', field: 'creationDateTime', sortable: true, filter: true },
+      { headerName: 'Server IP', field: 'serverIp', sortable: true, filter: true },
+      { headerName: 'Client IP', field: 'clientIp', sortable: true, filter: true },
+      {
+        headerName: 'Messages', field: 'messages', sortable: true, filter: true, autoHeight: true,
+        cellRenderer: (params: any) => {
+          return `<button class="btn btn-primary" (click)="viewMessages(${params.rowIndex})">View</button>`;
+        }
+      },
+    ];
+  }
+
+  getAllLogs(): Observable<SmartAssistantAuditEntity[]> {
+    return this.http.get<SmartAssistantAuditEntity[]>(this.auditLogUri);
+  }
+
+  generateRowData(): void {
+    this.getAllLogs().subscribe(logs => {
+      this.rowData = logs;
+    });
+  }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+  }
+
+  onQuickFilterChanged(event: any): void {
+    this.gridApi.setQuickFilter(event.target.value);
+  }
+
+  viewMessages(rowIndex: number): void {
+    const log = this.rowData[rowIndex];
+    this.selectedLogMessages = log.messages;
+    this.showMessageHistory = true;
+  }
+
+  closeMessageHistory(): void {
+    this.showMessageHistory = false;
+  }
+}
+```
+
+### Step 2: Update the HTML Template
+
+Add the modal for displaying the message history and update the existing table to include the "View" button.
+
+```html
+<div class="header-container">
+  <span class="heading">Audit Logs</span>
+  <div class="button-group">
+    <button class="icon-button" title="Refresh" (click)="processTableData()">
+      <i class="fa fa-refresh"></i>
+    </button>
+    <button class="icon-button" title="Export API Data in JSON" (click)="exportData()">
+      <i class="fa fa-download"></i>
+    </button>
+    <input class="search-input" type="search" placeholder="Search..." (input)="onQuickFilterChanged($event)">
+  </div>
+</div>
+
+<ag-grid-angular
+  id="viewSummaryTbl"
+  class="ag-theme-balham"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [sideBar]="sideBar"
+  [enableRangeSelection]="true"
+  [enableCharts]="true"
+  [animateRows]="true"
+  [pagination]="true"
+  [paginationPageSize]="paginationPageSize"
+  [getRowStyle]="getRowStyle"
+  (gridReady)="onGridReady($event)">
+</ag-grid-angular>
+
+<!-- Message History Modal -->
+<div *ngIf="showMessageHistory" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Message History</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeMessageHistory()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div *ngFor="let message of selectedLogMessages">
+          <div [ngClass]="message.type === 'bot-message' ? 'bot-message' : 'self-message'">
+            <p>{{ message.content }}</p>
+            <small>{{ message.timestamp }}</small>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeMessageHistory()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### Step 3: Add CSS for Styling
+
+Add the styles for the modal and the messages.
+
+```scss
+.modal {
+  display: block;
+  background: rgba(0, 0, 0, 0.5);
+
+  .modal-dialog {
+    max-width: 600px;
+    margin: 1.75rem auto;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .modal-body {
+    max-height: 400px;
+    overflow-y: auto;
+
+    .bot-message {
+      background-color: #e6f7ff;
+      border-left: 4px solid #1890ff;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+
+    .self-message {
+      background-color: #fff7e6;
+      border-left: 4px solid #faad14;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    small {
+      display: block;
+      margin-top: 5px;
+      color: #888;
+    }
+  }
+
+  .modal-footer {
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+```
+
+This code should address the issues and provide a formatted message history display in a modal when the "View" button is clicked. The different types of messages (bot-message and self-message) will be styled differently for better visualization.
