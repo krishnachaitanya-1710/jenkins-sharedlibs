@@ -1,0 +1,165 @@
+Let's update the code to ensure that clicking "View" opens the modal and displays the messages correctly, differentiating between bot messages and user messages. 
+
+### Step 1: Update `sa-audit-log.component.html`
+
+Ensure that the modal for displaying message history is defined and linked to a boolean variable (`showMessageHistory`). Also, make sure that the button to view messages is correctly configured to call a method (`viewMessageHistory`) when clicked.
+
+```html
+<!-- sa-audit-log.component.html -->
+
+<div class="table_container">
+  <ag-grid-angular
+    class="ag-theme-balham"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    (gridReady)="onGridReady($event)"
+    (cellClicked)="onCellClicked($event)"
+    enableSorting
+    enableFilter
+    [pagination]="true"
+    [paginationPageSize]="10"
+  ></ag-grid-angular>
+</div>
+
+<!-- Message History Modal -->
+<div *ngIf="showMessageHistory" class="modal" tabindex="-1" role="dialog" aria-labelledby="messageHistoryLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="messageHistoryLabel">Message History</h5>
+        <button type="button" class="close" (click)="closeMessageHistory()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div *ngFor="let message of messageHistory">
+          <div *ngIf="message.type === 'bot-message'" class="bot-message">
+            {{ message.content }}
+          </div>
+          <div *ngIf="message.type === 'self-message'" class="self-message">
+            {{ message.content }}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeMessageHistory()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### Step 2: Update `sa-audit-log.component.ts`
+
+Update the component TypeScript file to handle the modal display and ensure the messages are parsed correctly.
+
+```typescript
+// sa-audit-log.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { SmartAssistantAuditEntity, Message } from './models'; // Adjust the path as necessary
+
+@Component({
+  selector: 'app-sa-audit-log',
+  templateUrl: './sa-audit-log.component.html',
+  styleUrls: ['./sa-audit-log.component.scss']
+})
+export class SaAuditLogComponent implements OnInit {
+  auditLogUri: string = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+  columnDefs: any[] = [];
+  rowData: SmartAssistantAuditEntity[] = [];
+  gridApi: any;
+  gridColumnApi: any;
+  showMessageHistory: boolean = false;
+  messageHistory: Message[] = [];
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.processTableData();
+  }
+
+  processTableData(): void {
+    this.generateColumnDefs();
+    this.generateRowData();
+  }
+
+  generateColumnDefs(): void {
+    this.columnDefs = [
+      { headerName: 'Session ID', field: 'sessionId', sortable: true, filter: true },
+      { headerName: 'Employee ID', field: 'employeeId', sortable: true, filter: true },
+      { headerName: 'LAN ID', field: 'lanId', sortable: true, filter: true },
+      { headerName: 'API Name', field: 'apiName', sortable: true, filter: true },
+      { headerName: 'Creation Time', field: 'creationDateTime', sortable: true, filter: true },
+      { headerName: 'Server IP', field: 'serverIp', sortable: true, filter: true },
+      { headerName: 'Client IP', field: 'clientIp', sortable: true, filter: true },
+      {
+        headerName: 'Messages',
+        field: 'messages',
+        cellRenderer: (params: any) => `<button class="btn btn-primary" (click)="viewMessageHistory(${params.data.messages})">View</button>`,
+        autoHeight: true,
+        width: 150
+      }
+    ];
+  }
+
+  generateRowData(): void {
+    this.http.get<SmartAssistantAuditEntity[]>(this.auditLogUri).subscribe(logs => {
+      this.rowData = logs;
+    });
+  }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+  }
+
+  viewMessageHistory(messages: Message[]): void {
+    this.messageHistory = messages.map(message => ({
+      ...message,
+      content: this.escapeHtml(message.content)
+    }));
+    this.showMessageHistory = true;
+  }
+
+  escapeHtml(content: string): string {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(content));
+    return div.innerHTML;
+  }
+
+  closeMessageHistory(): void {
+    this.showMessageHistory = false;
+  }
+}
+```
+
+### Step 3: Update the CSS (Optional)
+
+You might want to add some CSS to differentiate between bot and user messages in the modal.
+
+```css
+/* sa-audit-log.component.scss */
+
+.bot-message {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.self-message {
+  background-color: #d1f0d1;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.modal-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+```
+
+These changes should ensure that when you click "View" in the Messages column, a modal pops up displaying the messages with the HTML content properly escaped and differentiates between bot and user messages.
