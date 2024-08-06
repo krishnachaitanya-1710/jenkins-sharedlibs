@@ -1,0 +1,202 @@
+To integrate the message history into your audit logs component with the new requirements, let's update the code accordingly. Here is the updated code:
+
+### 1. `sa-audit-log.component.html`
+
+Add a button to open the message history modal in the table and update the HTML structure for the modal.
+
+```html
+<div class="panel_format table_container">
+  <div class="header-container">
+    <span class="heading">Audit Logs</span>
+    <div class="button-group">
+      <button class="icon-button" title="Refresh" (click)="processTableData()">
+        <i class="fa fa-refresh"></i>
+      </button>
+      <button class="icon-button" title="Export API Data in JSON">
+        <i class="fa fa-download"></i>
+      </button>
+      <input class="search-input" type="search" placeholder="Search..." (input)="onQuickFilterChanged($event)" />
+    </div>
+  </div>
+
+  <ag-grid-angular
+    id="viewSummaryTbl"
+    style="width: 100%; height: 400px;"
+    class="ag-theme-balham"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [sideBar]="sideBar"
+    [enableRangeSelection]="true"
+    [enableCharts]="true"
+    [animateRows]="true"
+    [pagination]="true"
+    [paginationPageSize]="paginationPageSize"
+    [getRowStyle]="getRowStyle"
+    (gridReady)="onGridReady($event)"
+  ></ag-grid-angular>
+</div>
+
+<!-- Message History Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{ 'show': showMessageHistory }" *ngIf="showMessageHistory">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Message History</h5>
+        <button type="button" class="close" (click)="closeMessageHistory()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div *ngFor="let message of currentMessages">
+          <p [ngClass]="{ 'bot-message': message.type === 'bot-message', 'self-message': message.type === 'self-message' }">
+            {{ message.content }}
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeMessageHistory()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### 2. `sa-audit-log.component.ts`
+
+Update the TypeScript component to handle the new functionality for displaying the message history.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { SmartAssistantAuditEntity, Message } from './smart-assistant-audit-entity.interface';
+
+@Component({
+  selector: 'app-sa-audit-log',
+  templateUrl: './sa-audit-log.component.html',
+  styleUrls: ['./sa-audit-log.component.scss']
+})
+export class SaAuditLogComponent implements OnInit {
+  auditLogUri: string = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+  columnDefs: any[] = [];
+  rowData: SmartAssistantAuditEntity[] = [];
+  sideBar = { position: 'left' };
+  paginationPageSize: number = 10;
+  showMessageHistory: boolean = false;
+  currentMessages: Message[] = [];
+
+  defaultColDef = {
+    flex: 1,
+    minWidth: 100,
+    filter: true,
+    sortable: true,
+    resizable: true,
+  };
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.processTableData();
+  }
+
+  processTableData(): void {
+    this.generateColumnDefs();
+    this.generateRowData();
+  }
+
+  generateColumnDefs(): void {
+    this.columnDefs = [
+      { headerName: 'Session ID', field: 'sessionId', sortable: true, filter: true },
+      { headerName: 'Employee ID', field: 'employeeId', sortable: true, filter: true },
+      { headerName: 'LAN ID', field: 'lanId', sortable: true, filter: true },
+      { headerName: 'API Name', field: 'apiName', sortable: true, filter: true },
+      { headerName: 'Creation Time', field: 'creationDateTime', sortable: true, filter: true },
+      { headerName: 'Updation Time', field: 'updationDateTime', sortable: true, filter: true },
+      { headerName: 'Server IP', field: 'serverIp', sortable: true, filter: true },
+      { headerName: 'Client IP', field: 'clientIp', sortable: true, filter: true },
+      {
+        headerName: 'Messages',
+        field: 'messages',
+        sortable: true,
+        filter: true,
+        autoHeight: true,
+        cellRenderer: (params: any) => {
+          const messages: Message[] = params.value;
+          return messages.map(msg => `<p class="${msg.type}">${msg.content}</p>`).join('');
+        }
+      },
+      {
+        headerName: 'Actions',
+        field: 'actions',
+        cellRenderer: (params: any) => {
+          return `<button class="btn btn-info" (click)="viewMessageHistory(${params.node.rowIndex})">View</button>`;
+        }
+      }
+    ];
+  }
+
+  generateRowData(): void {
+    this.getAllLogs().subscribe((logs: SmartAssistantAuditEntity[]) => {
+      this.rowData = logs;
+    });
+  }
+
+  getAllLogs(): Observable<SmartAssistantAuditEntity[]> {
+    return this.http.get<SmartAssistantAuditEntity[]>(this.auditLogUri);
+  }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+  }
+
+  onQuickFilterChanged(event: any): void {
+    this.gridApi.setQuickFilter(event.target.value);
+  }
+
+  viewMessageHistory(rowIndex: number): void {
+    const selectedLog = this.rowData[rowIndex];
+    this.currentMessages = selectedLog.messages;
+    this.showMessageHistory = true;
+  }
+
+  closeMessageHistory(): void {
+    this.showMessageHistory = false;
+  }
+}
+```
+
+### 3. `smart-assistant-audit-entity.interface.ts`
+
+This is where you define the interfaces for `SmartAssistantAuditEntity` and `Message`.
+
+```typescript
+export interface SmartAssistantAuditEntity {
+  id: number;
+  sessionId: number;
+  employeeId: number;
+  lanId: string;
+  messages: Message[];
+  creationDateTime: string;
+  updationDateTime: string;
+  serverIp: number;
+  clientIp: number;
+}
+
+export interface Message {
+  type: 'self-message' | 'bot-message' | 'error-message';
+  content: string;
+  timestamp: string;
+  status: string;
+  actions: boolean;
+  submitActions: boolean;
+  enableDownload: boolean;
+  needsConfirmation: boolean;
+  createSupportTicket: boolean;
+  isTyping: boolean;
+  contentType: string;
+}
+```
+
+With these changes, your audit logs component should now be able to display message history in a formatted way, distinguishing between bot and self-messages, and allow the admin to see the interaction history.
