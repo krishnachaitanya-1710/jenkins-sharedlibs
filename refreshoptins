@@ -1,0 +1,90 @@
+### Handling Parameters and Keywords in onSubmit Function
+
+To handle parameters and keywords correctly in the `onSubmit` function, we need to ensure that if there are no commas, we still treat the values as single items. We'll use the `Array.isArray` method to check if the value is already an array. If not, we'll convert it to an array.
+
+### Refreshing Data After Update or Clone Operations
+
+To refresh the data after update or clone operations, we'll call the `loadConfigurations` method (or any method that loads your data) to refresh the entire page data.
+
+### Updated Code
+
+Here are the updates to your `onSubmit` function and the method to refresh data after update or clone operations:
+
+```typescript
+// Function to handle form submission
+onSubmit(apiForm: NgForm): void {
+  console.log("Processing the submitted form", apiForm.valid, this.apiForm, apiForm, apiForm.value);
+  if (apiForm.valid) {
+    const formValues = apiForm.value;
+    const parameters = formValues.parameters ? formValues.parameters.split(',').map((param: string) => param.trim()) : [];
+    const keywords = formValues.keywords ? formValues.keywords.split(',').map((keyword: string) => keyword.trim()) : [];
+
+    const newApi: Api = {
+      ...formValues,
+      parameters: Array.isArray(parameters) ? parameters : [parameters],
+      keywords: Array.isArray(keywords) ? keywords : [keywords]
+    };
+
+    if (this.isEdit) {
+      this.http.post(`${this.updateApiEndpoint}`, newApi).subscribe(
+        next => {
+          console.log('API updated successfully', next);
+          this.showSuccessMessage('API updated successfully');
+          this.refreshData();  // Refresh data after update
+        },
+        error => console.error('Error updating API', error)
+      );
+    } else {
+      this.http.post(`${this.onboardApiEndpoint}`, newApi).subscribe(
+        next => {
+          console.log('API onboarded successfully', next);
+          this.showSuccessMessage('API added successfully');
+          this.refreshData();  // Refresh data after onboarding
+        },
+        error => console.error('Error onboarding API', error)
+      );
+    }
+
+    this.closeApiForm();
+  }
+}
+
+// Function to refresh data after update or clone
+refreshData(): void {
+  this.loadConfigurations();
+}
+
+// Function to clone API
+cloneApi(data: any): void {
+  this.populateForm(data.appName, data, false);
+  this.onSubmit(this.apiForm);
+}
+
+// Function to edit API
+editApi(data: any): void {
+  this.populateForm(data.appName, data, false);
+  this.isEdit = true;
+}
+```
+
+### Explanation
+
+1. **Handling Parameters and Keywords**: The `onSubmit` function now checks if `parameters` and `keywords` are comma-separated. If they aren't, it wraps them in an array.
+2. **Refreshing Data**: The `refreshData` method calls `loadConfigurations` to reload the data. This method is called after successful update or onboarding of an API.
+3. **Cloning and Editing API**: The `cloneApi` and `editApi` methods now call `populateForm` to fill the form with existing data and then call `onSubmit` to submit the form.
+
+### HTML Update for Form Submission
+
+Make sure the form submission in your HTML is correct:
+
+```html
+<form (ngSubmit)="onSubmit(apiForm)" #apiForm="ngForm">
+  <!-- form fields here -->
+  <div class="button-group">
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-primary" (click)="closeApiForm()">Cancel</button>
+  </div>
+</form>
+```
+
+With these updates, your form should handle parameters and keywords correctly even if they are not comma-separated, and the data will refresh after performing update or clone operations.
