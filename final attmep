@@ -1,0 +1,74 @@
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { SmartAssistantAuditEntity, Message } from './interfaces';
+
+@Component({
+  selector: 'app-sa-audit-log',
+  templateUrl: './sa-audit-log.component.html',
+  styleUrls: ['./sa-audit-log.component.scss']
+})
+export class SaAuditLogComponent implements OnInit {
+  auditLogUri: string = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+  columnDefs: any[] = [];
+  rowData: SmartAssistantAuditEntity[] = [];
+  sideBar = { position: 'left' };
+  gridApi: any;
+  gridColumnApi: any;
+  showMessageHistory: boolean = false;
+  selectedMessages: Message[] = [];
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.processTableData();
+  }
+
+  processTableData(): void {
+    this.generateColumnDefs();
+    this.generateRowData();
+  }
+
+  generateColumnDefs(): void {
+    this.columnDefs = [
+      { headerName: 'Session ID', field: 'sessionId', sortable: true, filter: true },
+      { headerName: 'Employee ID', field: 'employeeId', sortable: true, filter: true },
+      { headerName: 'LAN ID', field: 'lanId', sortable: true, filter: true },
+      { headerName: 'API Name', field: 'apiName', sortable: true, filter: true },
+      { headerName: 'Creation Time', field: 'creationDateTime', sortable: true, filter: true },
+      { headerName: 'Server IP', field: 'serverIp', sortable: true, filter: true },
+      { headerName: 'Client IP', field: 'clientIp', sortable: true, filter: true },
+      {
+        headerName: 'Messages',
+        field: 'messages',
+        cellRenderer: (params: any) => {
+          return `<a href="javascript:void(0);" style="color:blue;text-decoration:underline;" (click)="onCellClicked(${params})">View Message History</a>`;
+        }
+      },
+    ];
+  }
+
+  generateRowData(): void {
+    this.getAllLogs().subscribe(logs => {
+      this.rowData = logs;
+    });
+  }
+
+  getAllLogs(): Observable<SmartAssistantAuditEntity[]> {
+    return this.http.get<SmartAssistantAuditEntity[]>(this.auditLogUri);
+  }
+
+  onCellClicked(event: any): void {
+    this.selectedMessages = JSON.parse(event.data.messages);
+    this.showMessageHistory = true;
+  }
+
+  formatMessageContent(content: string): string {
+    let div = document.createElement('div');
+    div.innerHTML = content;
+    return div.textContent || div.innerText || "";
+  }
+
+  closeMessageHistory(): void {
+    this.showMessageHistory = false;
+  }
+}
