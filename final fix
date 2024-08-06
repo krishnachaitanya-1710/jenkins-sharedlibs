@@ -1,0 +1,143 @@
+To enhance your message history display with titles indicating whether the message is from the Smart Assistant or the user and to align the user messages to the right side of the modal, you can update your HTML and CSS accordingly. Here’s how you can achieve this:
+
+### HTML
+Update your `modal-body` section to include titles and apply classes for styling:
+
+```html
+<div class="modal-body">
+  <div *ngFor="let message of messageHistory">
+    <div *ngIf="message.type === 'bot-message'" class="bot-message-container">
+      <h6>Smart Assistant</h6>
+      <div class="bot-message">
+        {{ cleanString(message.content) }}
+      </div>
+    </div>
+    <div *ngIf="message.type === 'self-message'" class="self-message-container">
+      <h6>User Query</h6>
+      <div class="self-message">
+        {{ cleanString(message.content) }}
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### CSS
+Add the following CSS to style the messages and align user messages to the right:
+
+```css
+.bot-message-container {
+  background-color: #e6f7ff; /* Light blue background for bot messages */
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-left: 5px solid #007bff; /* Blue border for bot messages */
+}
+
+.self-message-container {
+  background-color: #fff3cd; /* Light yellow background for user messages */
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-left: 5px solid #ffc107; /* Yellow border for user messages */
+  text-align: right; /* Align user messages to the right */
+}
+
+h6 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.bot-message, .self-message {
+  margin-top: 5px;
+}
+```
+
+### TypeScript
+Ensure your TypeScript methods remain consistent to handle the message history. If necessary, update your `cleanString` method to ensure HTML tags are cleaned correctly:
+
+```typescript
+cleanString(input: string): string {
+  // Remove HTML tags and decode HTML entities
+  const doc = new DOMParser().parseFromString(input, 'text/html');
+  return doc.documentElement.textContent || "";
+}
+```
+
+### Full Component Example
+Combining all the above steps, your full component files should look like this:
+
+#### HTML (sa-audit-log.component.html)
+```html
+<div class="modal-header">
+  <h5 class="modal-title" id="messageHistoryLabel">Message History</h5>
+  <button type="button" class="close" (click)="closeMessageHistory()" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div *ngFor="let message of messageHistory">
+    <div *ngIf="message.type === 'bot-message'" class="bot-message-container">
+      <h6>Smart Assistant</h6>
+      <div class="bot-message">
+        {{ cleanString(message.content) }}
+      </div>
+    </div>
+    <div *ngIf="message.type === 'self-message'" class="self-message-container">
+      <h6>User Query</h6>
+      <div class="self-message">
+        {{ cleanString(message.content) }}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="closeMessageHistory()">Close</button>
+</div>
+```
+
+#### CSS (sa-audit-log.component.scss)
+```css
+.bot-message-container {
+  background-color: #e6f7ff; /* Light blue background for bot messages */
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-left: 5px solid #007bff; /* Blue border for bot messages */
+}
+
+.self-message-container {
+  background-color: #fff3cd; /* Light yellow background for user messages */
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-left: 5px solid #ffc107; /* Yellow border for user messages */
+  text-align: right; /* Align user messages to the right */
+}
+
+h6 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.bot-message, .self-message {
+  margin-top: 5px;
+}
+```
+
+#### TypeScript (sa-audit-log.component.ts)
+```typescript
+cleanString(input: string): string {
+  const doc = new DOMParser().parseFromString(input, 'text/html');
+  return doc.documentElement.textContent || "";
+}
+
+viewMessageHistory(messages: any[]): void {
+  this.messageHistory = messages;
+  this.showMessageHistory = true;
+}
+```
+
+With these updates, your modal should display the message history with a clear distinction between Smart Assistant responses and user queries, aligned appropriately for better readability.
