@@ -1,0 +1,257 @@
+To create a comprehensive usage patterns dashboard for your application, we'll focus on the following components:
+
+1. **API Usage Report (Bar Chart)**
+2. **Success and Failure Rates (Pie Chart)**
+3. **User Feedback Collection and Display**
+
+### Step 1: Set Up the Project
+Ensure you have Angular, D3.js, and the necessary environment set up.
+
+```bash
+ng new smart-assistant-dashboard
+cd smart-assistant-dashboard
+npm install d3
+```
+
+### Step 2: Create Reports Component
+
+Generate a new component for the reports dashboard:
+
+```bash
+ng generate component reports
+```
+
+### Step 3: Update `reports.component.html`
+
+Add the HTML structure for the reports dashboard, including containers for the bar chart and pie chart:
+
+```html
+<div class="container">
+  <h2>Usage Patterns</h2>
+  <div id="api-usage">
+    <h3>API Usage Report</h3>
+    <figure id="bar"></figure>
+  </div>
+  <div id="success-failure">
+    <h3>Success and Failure Rates</h3>
+    <figure id="pie"></figure>
+  </div>
+</div>
+```
+
+### Step 4: Update `reports.component.ts`
+
+Add the logic to fetch data from the audit log API and render the charts using D3.js:
+
+```typescript
+import { Component, OnInit, ElementRef } from '@angular/core';
+import * as d3 from 'd3';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.css']
+})
+export class ReportsComponent implements OnInit {
+  private data: any[] = [];
+  public feedback: string = '';
+  private margin = 50;
+  private width = 750 - (this.margin * 2);
+  private height = 400 - (this.margin * 2);
+
+  constructor(private http: HttpClient, private el: ElementRef) { }
+
+  ngOnInit(): void {
+    this.loadAuditLogData();
+  }
+
+  private loadAuditLogData(): void {
+    const apiUrl = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs';
+    this.http.get<any[]>(apiUrl).subscribe((data: any[]) => {
+      this.data = data;
+      this.createSvg();
+      this.drawBars(this.data);
+      this.drawPieChart(this.calculateSuccessFailureRates(this.data));
+    });
+  }
+
+  private createSvg(): void {
+    d3.select(this.el.nativeElement).select('svg').remove(); // Clear previous SVG
+    d3.select("figure#bar")
+      .append("svg")
+      .attr("width", this.width + (this.margin * 2))
+      .attr("height", this.height + (this.margin * 2))
+      .append("g")
+      .attr("transform", `translate(${this.margin},${this.margin})`);
+  }
+
+  private drawBars(data: any[]): void {
+    const svg = d3.select("svg").select("g");
+    const x = d3.scaleBand().range([0, this.width]).domain(data.map(d => d.apiName)).padding(0.4);
+    const y = d3.scaleLinear().domain([0, d3.max(data, d => d.count)]).range([this.height, 0]);
+
+    svg.append("g")
+      .attr("transform", `translate(0,${this.height})`)
+      .call(d3.axisBottom(x).tickFormat((d, i) => d as string).tickSize(5))
+      .selectAll("text")
+      .attr("dy", ".35em")
+      .attr("x", -9)
+      .attr("y", 0)
+      .attr("transform", "rotate(-40)")
+      .style("text-anchor", "end");
+
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    svg.selectAll("rect")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", d => x(d.apiName))
+      .attr("y", d => y(d.count))
+      .attr("width", x.bandwidth())
+      .attr("height", d => this.height - y(d.count))
+      .attr("fill", (d, i) => d3.schemeCategory10[i % 10]);
+  }
+
+  private drawPieChart(data: any): void {
+    const width = 450;
+    const height = 450;
+    const margin = 40;
+
+    const radius = Math.min(width, height) / 2 - margin;
+
+    const svg = d3.select("figure#pie")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${width / 2},${height / 2})`);
+
+    const pie = d3.pie<any>()
+      .value(d => d.value);
+
+    const data_ready = pie(d3.entries(data));
+
+    const arc = d3.arc()
+      .innerRadius(0)
+      .outerRadius(radius);
+
+    svg
+      .selectAll('slices')
+      .data(data_ready)
+      .enter()
+      .append('path')
+      .attr('d', arc)
+      .attr('fill', (d, i) => d3.schemeCategory10[i % 10]);
+
+    svg
+      .selectAll('slices')
+      .data(data_ready)
+      .enter()
+      .append('text')
+      .text(d => `${d.data.key}: ${d.data.value}`)
+      .attr("transform", d => `translate(${arc.centroid(d)})`)
+      .style("text-anchor", "middle")
+      .style("font-size", 17);
+  }
+
+  private calculateSuccessFailureRates(data: any[]): any {
+    const successCount = data.filter(d => d.status === 'success').length;
+    const failureCount = data.filter(d => d.status === 'failure').length;
+    return {
+      success: successCount,
+      failure: failureCount
+    };
+  }
+
+  public submitFeedback(): void {
+    const feedbackData = {
+      feedback: this.feedback,
+      timestamp: new Date()
+    };
+    this.http.post('/api/feedback', feedbackData)
+      .subscribe(response => {
+        console.log('Feedback submitted successfully');
+      }, error => {
+        console.error('Error submitting feedback', error);
+      });
+  }
+}
+```
+
+### Step 5: Update `reports.component.css`
+
+Add some basic styles to format the dashboard nicely:
+
+```css
+.container {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#bar, #pie {
+  display: inline-block;
+  margin: 20px;
+}
+```
+
+### Step 6: Add Feedback Form and Capture Data
+
+Update your HTML to include the feedback form and update the component logic to capture and send the feedback data.
+
+In `reports.component.html`:
+
+```html
+<div class="container">
+  <h2>Usage Patterns</h2>
+  <div id="api-usage">
+    <h3>API Usage Report</h3>
+    <figure id="bar"></figure>
+  </div>
+  <div id="success-failure">
+    <h3>Success and Failure Rates</h3>
+    <figure id="pie"></figure>
+  </div>
+  <form (ngSubmit)="submitFeedback()">
+    <div class="form-group">
+      <label for="feedback">Please provide your feedback:</label>
+      <textarea id="feedback" class="form-control" [(ngModel)]="feedback" name="feedback" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+```
+
+### Step 7: Ensure Backend API for Feedback
+
+Ensure your backend API is ready to handle the feedback POST request. 
+
+### Step 8: Update Routing (Optional)
+
+If you haven't already, make sure your app routes to the reports component.
+
+In `app-routing.module.ts`:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { ReportsComponent } from './reports/reports.component';
+
+const routes: Routes = [
+  { path: 'reports', component: ReportsComponent },
+  { path: '', redirectTo: '/reports', pathMatch: 'full' }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+### Conclusion
+
+This setup will give you a comprehensive dashboard with API usage patterns, success/failure rates, and user feedback collection. You can further enhance it by adding more charts, metrics, and interactivity based on your requirements.
