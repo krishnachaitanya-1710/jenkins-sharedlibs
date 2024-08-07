@@ -1,0 +1,141 @@
+If you do not have `chart.js` or `ng2-charts` and prefer not to use these libraries, you can use the D3.js library to create interactive data visualizations. Here's how you can set up D3.js in your Angular project and create a bar chart for the API usage data.
+
+### Step 1: Install D3.js
+You can install D3.js via npm by running the following command:
+
+```bash
+npm install d3
+```
+
+### Step 2: Create the Reports Component
+If you don't already have a reports component, create one:
+
+```bash
+ng generate component reports
+```
+
+### Step 3: Fetch and Process the Data
+Modify the reports component to fetch and prepare the audit log data for charting. 
+
+#### reports.component.ts
+```typescript
+import { Component, OnInit, ElementRef } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import * as d3 from 'd3';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  private svg: any;
+  private margin = 50;
+  private width = 750 - (this.margin * 2);
+  private height = 400 - (this.margin * 2);
+
+  constructor(private http: HttpClient, private el: ElementRef) { }
+
+  ngOnInit(): void {
+    this.loadAuditLogData();
+  }
+
+  loadAuditLogData(): void {
+    const apiUrl = 'http://localhost:8082/v1/admin/smartassistant/getAuditLogs'; // Replace with your API endpoint
+    this.http.get<any[]>(apiUrl).subscribe(data => {
+      this.createSvg();
+      this.drawBars(data);
+    });
+  }
+
+  private createSvg(): void {
+    this.svg = d3.select(this.el.nativeElement).select("figure#bar")
+      .append("svg")
+      .attr("width", this.width + (this.margin * 2))
+      .attr("height", this.height + (this.margin * 2))
+      .append("g")
+      .attr("transform", "translate(" + this.margin + "," + this.margin + ")");
+  }
+
+  private drawBars(data: any[]): void {
+    const apiUsageCount = {};
+    data.forEach(log => {
+      const apiName = log.apiName;
+      if (apiUsageCount[apiName]) {
+        apiUsageCount[apiName]++;
+      } else {
+        apiUsageCount[apiName] = 1;
+      }
+    });
+
+    const x = d3.scaleBand()
+      .range([0, this.width])
+      .domain(Object.keys(apiUsageCount))
+      .padding(0.2);
+
+    this.svg.append("g")
+      .attr("transform", "translate(0," + this.height + ")")
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("transform", "translate(-10,0)rotate(-45)")
+      .style("text-anchor", "end");
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(Object.values(apiUsageCount))])
+      .range([this.height, 0]);
+
+    this.svg.append("g")
+      .call(d3.axisLeft(y));
+
+    this.svg.selectAll("bars")
+      .data(Object.entries(apiUsageCount))
+      .enter()
+      .append("rect")
+      .attr("x", (d: any) => x(d[0]))
+      .attr("y", (d: any) => y(d[1]))
+      .attr("width", x.bandwidth())
+      .attr("height", (d: any) => this.height - y(d[1]))
+      .attr("fill", "#d04a35");
+  }
+}
+```
+
+### Step 4: Create the Chart Template
+Add the template for the D3.js chart in `reports.component.html`.
+
+#### reports.component.html
+```html
+<div class="container">
+  <h2>API Usage Report</h2>
+  <figure id="bar"></figure>
+</div>
+```
+
+### Step 5: Add Styles (Optional)
+You can add some styles to improve the appearance of your reports component.
+
+#### reports.component.scss
+```scss
+.container {
+  margin-top: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#bar {
+  display: block;
+  margin: auto;
+}
+```
+
+### Step 6: Run Your Application
+Now you can run your Angular application and navigate to the reports component to see the bar chart.
+
+```bash
+ng serve
+```
+
+By following these steps, you should be able to create and display a bar chart that visualizes the usage patterns of your Smart Assistant using D3.js. You can customize and extend this example to include additional charts and data processing as needed.
