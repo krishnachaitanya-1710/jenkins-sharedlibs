@@ -1,0 +1,106 @@
+To implement an animation that bounces every 2 minutes and repeats for 5 times, you can use a combination of CSS animations and JavaScript to control the timing and repetitions. Here's how you can achieve this:
+
+### CSS (SCSS)
+Define the bounce animation and prepare the class for the bouncing effect:
+
+```scss
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+.mat-fab {
+  background-color: var(--header-bg-color);
+  position: fixed;
+  width: 56px;
+  height: 56px;
+  bottom: 64px;
+  right: 8px;
+  z-index: 200;
+  border: none;
+  border-radius: 50%; /* Makes the background round */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animate-bounce {
+  animation: bounce 2s ease; /* Apply bounce animation */
+}
+```
+
+### JavaScript (Angular Component)
+
+Use JavaScript to add and remove the `animate-bounce` class every 2 minutes, up to 5 times:
+
+```typescript
+import { Component, OnInit, OnDestroy } from '@angular/core';
+
+@Component({
+  selector: 'app-your-component',
+  templateUrl: './your-component.component.html',
+  styleUrls: ['./your-component.component.scss']
+})
+export class YourComponent implements OnInit, OnDestroy {
+  
+  private bounceInterval: any;
+  private bounceCount: number = 0;
+  private maxBounces: number = 5;
+  private bounceDelay: number = 2 * 60 * 1000; // 2 minutes in milliseconds
+
+  ngOnInit(): void {
+    this.startBouncing();
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.bounceInterval);
+  }
+
+  startBouncing(): void {
+    this.bounceInterval = setInterval(() => {
+      if (this.bounceCount < this.maxBounces) {
+        this.triggerBounce();
+        this.bounceCount++;
+      } else {
+        clearInterval(this.bounceInterval);
+      }
+    }, this.bounceDelay);
+  }
+
+  triggerBounce(): void {
+    const button = document.querySelector('.mat-fab');
+    if (button) {
+      button.classList.add('animate-bounce');
+      setTimeout(() => {
+        button.classList.remove('animate-bounce');
+      }, 2000); // 2 seconds for the bounce animation duration
+    }
+  }
+
+  toggleChatbox(): void {
+    // Your toggle logic
+  }
+}
+```
+
+### Explanation
+1. **CSS Animation:**
+   - The `@keyframes bounce` defines the bounce effect.
+   - The `.animate-bounce` class applies the bounce animation.
+
+2. **JavaScript Timer:**
+   - The `startBouncing` method sets an interval to trigger the bounce animation every 2 minutes.
+   - The `triggerBounce` method adds the `animate-bounce` class to start the animation and removes it after 2 seconds (the duration of the bounce animation).
+
+3. **Stopping the Animation:**
+   - The `bounceCount` ensures the animation runs only 5 times.
+   - The interval is cleared after 5 repetitions to stop further animations.
+
+This approach ensures that the bounce animation runs every 2 minutes and repeats only 5 times, providing a periodic attention grab without continuous bouncing.
