@@ -1,0 +1,117 @@
+Yes, you can add an icon that represents the smart assistant and also include animations to grab the user's attention once the website is completely loaded.
+
+### 1. Changing the Icon
+
+First, replace the existing SVG with an SVG that represents a smart assistant. If you have a specific icon in mind, you can use that. Here is an example assuming you have an SVG icon for the assistant:
+
+```html
+<button mat-fab class="mat-fab" [style.--header-bg-color]="headerBgColor" (click)="toggleChatbox()" *ngIf="!loading">
+  <img src="path-to-your-assistant-icon.svg" alt="Assistant Icon" class="assistant-icon" />
+</button>
+```
+
+### 2. Adding Animations
+
+You can use CSS animations to make the icon grab attention. Here’s an example using a bounce animation:
+
+#### CSS (SCSS)
+
+```scss
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+.mat-fab {
+  background-color: var(--header-bg-color);
+  position: fixed;
+  padding: 20px;
+  bottom: 64px;
+  right: 8px;
+  z-index: 200;
+  border: none;
+  border-radius: 50%; /* Makes the background round */
+  animation: bounce 2s ease infinite; /* Adding bounce animation */
+}
+
+.assistant-icon {
+  width: 32px;
+  height: 32px;
+}
+```
+
+### 3. JavaScript for Loading Animation
+
+To trigger the animation only once the website is fully loaded, you can use JavaScript to add the animation class:
+
+#### JavaScript (Angular Component)
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-your-component',
+  templateUrl: './your-component.component.html',
+  styleUrls: ['./your-component.component.scss']
+})
+export class YourComponent implements OnInit {
+  
+  ngOnInit(): void {
+    window.addEventListener('load', this.addAnimation);
+  }
+
+  addAnimation(): void {
+    const button = document.querySelector('.mat-fab');
+    if (button) {
+      button.classList.add('animate');
+    }
+  }
+}
+```
+
+#### Updated CSS
+
+Update the CSS to apply the animation only when the class `animate` is added:
+
+```scss
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+.mat-fab {
+  background-color: var(--header-bg-color);
+  position: fixed;
+  padding: 20px;
+  bottom: 64px;
+  right: 8px;
+  z-index: 200;
+  border: none;
+  border-radius: 50%; /* Makes the background round */
+}
+
+.mat-fab.animate {
+  animation: bounce 2s ease infinite; /* Adding bounce animation */
+}
+
+.assistant-icon {
+  width: 32px;
+  height: 32px;
+}
+```
+
+With these steps, the icon will represent a smart assistant, and it will animate to grab the user's attention once the website is fully loaded. Make sure to replace `"path-to-your-assistant-icon.svg"` with the actual path to your assistant icon SVG file.
