@@ -1,0 +1,167 @@
+Given your HTML structure for the chatbox, let's integrate the confirmation dialog box for clearing the chat history within the same component. This will ensure a seamless user experience. We will add the dialog HTML, CSS, and the necessary TypeScript logic to handle showing and hiding the dialog.
+
+### HTML Structure
+
+Add the dialog box structure within the existing `chatbox-shared.component.html`:
+
+```html
+<div *ngIf="isOpen" class="chatbox-container" [style.--header-bg-color]="headerBgColor"
+     [style.--assistant-message-bg-color]="assistantMessageBgColor"
+     [style.--user-message-bg-color]="userMessageBgColor">
+
+  <div class="header">
+    <h3 style="margin: 0; font-size: 18px; color: white">{{assistantTitle}}</h3>
+    <span class="icon-button" title="Minimize" (click)="toggleMinimize()">
+      <!-- SVG for minimize icon -->
+    </span>
+    <span class="icon-button" title="Maximize" (click)="toggleResize()">
+      <!-- SVG for maximize icon -->
+    </span>
+    <span class="icon-button" title="Refresh" (click)="refreshChat()">
+      <!-- SVG for refresh icon -->
+    </span>
+    <span class="icon-button" title="Close" (click)="openConfirmDialog()">
+      <!-- SVG for close icon -->
+    </span>
+  </div>
+
+  <div class="chat-content" [style.width]="chatBoxWidth" [style.height]="isMinimized && isOpen ? 'auto' : chatBoxHeight">
+    <!-- Chat messages and input box -->
+  </div>
+
+  <!-- Confirmation Dialog -->
+  <div *ngIf="showDialog" class="confirmation-dialog">
+    <p>Are you sure you want to clear all chat history?</p>
+    <div class="buttons">
+      <button class="btn cancel" (click)="hideConfirmDialog()">Cancel</button>
+      <button class="btn confirm" (click)="confirmClearChat()">Confirm</button>
+    </div>
+  </div>
+
+</div>
+```
+
+### CSS (SCSS)
+
+Add styles for the confirmation dialog and buttons within `chatbox-shared.component.scss`:
+
+```scss
+.chatbox-container {
+  /* Your existing chatbox container styles */
+}
+
+.header {
+  /* Your existing header styles */
+}
+
+.icon-button {
+  /* Your existing icon button styles */
+}
+
+.confirmation-dialog {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 300px;
+  text-align: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.confirmation-dialog p {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn.cancel {
+  background-color: #f44336;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.btn.cancel:hover {
+  background-color: #d32f2f;
+}
+
+.btn.confirm {
+  background-color: #4caf50;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.btn.confirm:hover {
+  background-color: #388e3c;
+}
+```
+
+### TypeScript Logic
+
+Add the necessary methods in your `chatbox-shared.component.ts`:
+
+```typescript
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-chatbox-shared',
+  templateUrl: './chatbox-shared.component.html',
+  styleUrls: ['./chatbox-shared.component.scss']
+})
+export class ChatboxSharedComponent {
+  isOpen = true; // Assuming this controls the chatbox visibility
+  isMinimized = false; // Assuming this controls the minimized state
+  showDialog = false; // State to control the visibility of the confirmation dialog
+
+  // Add your existing properties and methods
+
+  openConfirmDialog(): void {
+    this.showDialog = true;
+  }
+
+  hideConfirmDialog(): void {
+    this.showDialog = false;
+  }
+
+  confirmClearChat(): void {
+    // Add your logic to clear the chat history here
+    this.hideConfirmDialog();
+    this.isOpen = false; // Close the chatbox
+  }
+
+  // Add your existing methods for toggleMinimize, toggleResize, refreshChat, etc.
+}
+```
+
+### Explanation
+
+1. **HTML Structure:**
+   - The confirmation dialog is included within the chatbox container and is conditionally displayed using `*ngIf="showDialog"`.
+   - The `openConfirmDialog` method is called when the close button is clicked to display the dialog.
+
+2. **CSS Styling:**
+   - The dialog box and buttons are styled to enhance their appearance.
+   - Flexbox is used to arrange the buttons.
+
+3. **TypeScript Logic:**
+   - The `openConfirmDialog` method sets `showDialog` to `true` to display the dialog.
+   - The `hideConfirmDialog` method sets `showDialog` to `false` to hide the dialog.
+   - The `confirmClearChat` method clears the chat history (add your logic here), hides the dialog, and closes the chatbox.
+
+This setup should ensure a smooth user experience with a confirmation dialog appearing when the close button is clicked, allowing users to confirm or cancel the action to clear chat history.
