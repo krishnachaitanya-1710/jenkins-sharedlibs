@@ -1,0 +1,99 @@
+To enhance the confirm dialog box and button backgrounds, you can use CSS to style the elements. Here’s a step-by-step guide to improve the look and feel of your confirm dialog box:
+
+### HTML Structure
+
+Ensure your HTML structure is clean and has the necessary classes for styling:
+
+```html
+<div class="confirmation-dialog">
+  <p>Are you sure you want to clear all chat history?</p>
+  <div class="buttons">
+    <button class="btn cancel" (click)="onCancel()">Cancel</button>
+    <button class="btn confirm" (click)="onConfirm()">Confirm</button>
+  </div>
+</div>
+```
+
+### CSS (SCSS)
+
+Add the following CSS to enhance the dialog box and button styles:
+
+```scss
+.confirmation-dialog {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 300px;
+  text-align: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.confirmation-dialog p {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn.cancel {
+  background-color: #f44336;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.btn.cancel:hover {
+  background-color: #d32f2f;
+}
+
+.btn.confirm {
+  background-color: #4caf50;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.btn.confirm:hover {
+  background-color: #388e3c;
+}
+```
+
+### Explanation
+
+1. **Confirmation Dialog Styling:**
+   - **Background and Border Radius:** Adds a white background with rounded corners.
+   - **Box Shadow:** Provides a subtle shadow for a lifted appearance.
+   - **Padding and Width:** Adds padding inside the dialog and sets its width.
+   - **Text Alignment:** Centers the text inside the dialog.
+   - **Positioning:** Centers the dialog box on the screen.
+
+2. **Text Styling:**
+   - **Font Size and Color:** Sets the font size and color for the message text.
+   - **Margin:** Adds space below the text.
+
+3. **Button Container:**
+   - **Flexbox:** Uses flexbox to align the buttons side-by-side.
+
+4. **Button Styling:**
+   - **Padding and Border Radius:** Adds padding and rounded corners to the buttons.
+   - **Font Size and Cursor:** Sets the font size and changes the cursor to pointer on hover.
+   - **Background Colors and Transitions:** Sets different background colors for the cancel and confirm buttons with hover effects.
+
+### Usage
+
+By applying these styles, your confirm dialog box will have a modern and enhanced look and feel with visually appealing buttons. Adjust the colors and sizes as needed to fit your application's design language.
