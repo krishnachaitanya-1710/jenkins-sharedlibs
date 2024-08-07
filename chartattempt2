@@ -1,0 +1,108 @@
+To enhance your bar chart with different color codes for each API and make it more visually appealing, you can update the code as follows:
+
+### Updated `reports.component.ts`
+```typescript
+import { Component, OnInit } from '@angular/core';
+import * as d3 from 'd3';
+
+@Component({
+  selector: 'app-reports',
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss']
+})
+export class ReportsComponent implements OnInit {
+  private data = [
+    { api: 'API 1', count: 25 },
+    { api: 'API 2', count: 20 },
+    { api: 'API 3', count: 5 },
+    { api: 'API 4', count: 10 },
+    { api: 'API 5', count: 8 },
+    { api: 'API 6', count: 3 }
+  ];
+
+  private svg;
+  private margin = 50;
+  private width = 750 - (this.margin * 2);
+  private height = 400 - (this.margin * 2);
+  
+  ngOnInit(): void {
+    this.createSvg();
+    this.drawBars(this.data);
+  }
+
+  private createSvg(): void {
+    this.svg = d3.select('figure#bar')
+      .append('svg')
+      .attr('width', this.width + (this.margin * 2))
+      .attr('height', this.height + (this.margin * 2))
+      .append('g')
+      .attr('transform', 'translate(' + this.margin + ',' + this.margin + ')');
+  }
+
+  private drawBars(data: any[]): void {
+    // Create the X-axis band scale
+    const x = d3.scaleBand()
+      .range([0, this.width])
+      .domain(data.map(d => d.api))
+      .padding(0.2);
+
+    // Draw the X-axis on the DOM
+    this.svg.append('g')
+      .attr('transform', 'translate(0,' + this.height + ')')
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'translate(-10,0)rotate(-45)')
+      .style('text-anchor', 'end');
+
+    // Create the Y-axis band scale
+    const y = d3.scaleLinear()
+      .domain([0, 30])
+      .range([this.height, 0]);
+
+    // Draw the Y-axis on the DOM
+    this.svg.append('g')
+      .call(d3.axisLeft(y));
+
+    // Create and fill the bars
+    this.svg.selectAll('bars')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('x', d => x(d.api))
+      .attr('y', d => y(d.count))
+      .attr('width', x.bandwidth())
+      .attr('height', d => this.height - y(d.count))
+      .attr('fill', (d, i) => d3.schemeCategory10[i % 10]);
+  }
+}
+```
+
+### Updated `reports.component.html`
+```html
+<h2>API Usage Report</h2>
+<figure id="bar"></figure>
+```
+
+### Updated `reports.component.scss`
+```scss
+#bar {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill: steelblue;
+}
+```
+
+### Explanation
+1. **Color Coding:** The `.attr('fill', (d, i) => d3.schemeCategory10[i % 10]);` line in `drawBars` method assigns a different color from the `d3.schemeCategory10` palette to each bar based on its index.
+2. **Title:** Added a title "API Usage Report" above the chart.
+3. **Formatted Axes:** Adjusted text on the X-axis to rotate for better readability.
+
+This setup will generate a bar chart with each bar having a different color from the D3 categorical color scheme, making it visually distinct and easy to interpret.
