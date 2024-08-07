@@ -1,0 +1,114 @@
+To get an icon that represents a smart assistant, you can use free resources like those available on Icons8 and Noun Project. Here’s a step-by-step guide to incorporate an icon and add animations to grab user attention:
+
+### 1. Download an Icon
+You can download a smart assistant icon from the following sources:
+- [Icons8](https://icons8.com/icons/set/smart-assistant)
+- [Noun Project](https://thenounproject.com/search/?q=smart+assistant&i=6212087)
+
+### 2. Adding the Icon to Your Project
+After downloading the SVG file, include it in your project and update your HTML and CSS accordingly.
+
+### HTML
+```html
+<button mat-fab class="mat-fab" [style.--header-bg-color]="headerBgColor" (click)="toggleChatbox()" *ngIf="!loading">
+  <img src="assets/icons/smart-assistant-icon.svg" alt="Assistant Icon" class="assistant-icon" />
+</button>
+```
+
+### CSS (SCSS)
+```scss
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+.mat-fab {
+  background-color: var(--header-bg-color);
+  position: fixed;
+  padding: 20px;
+  bottom: 64px;
+  right: 8px;
+  z-index: 200;
+  border: none;
+  border-radius: 50%; /* Makes the background round */
+  animation: bounce 2s ease infinite; /* Adding bounce animation */
+}
+
+.assistant-icon {
+  width: 32px;
+  height: 32px;
+}
+```
+
+### 3. JavaScript for Loading Animation
+To trigger the animation only once the website is fully loaded, use JavaScript to add the animation class:
+
+#### TypeScript (Angular Component)
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-your-component',
+  templateUrl: './your-component.component.html',
+  styleUrls: ['./your-component.component.scss']
+})
+export class YourComponent implements OnInit {
+  
+  ngOnInit(): void {
+    window.addEventListener('load', this.addAnimation);
+  }
+
+  addAnimation(): void {
+    const button = document.querySelector('.mat-fab');
+    if (button) {
+      button.classList.add('animate');
+    }
+  }
+}
+```
+
+#### Updated CSS
+Update the CSS to apply the animation only when the class `animate` is added:
+
+```scss
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+.mat-fab {
+  background-color: var(--header-bg-color);
+  position: fixed;
+  padding: 20px;
+  bottom: 64px;
+  right: 8px;
+  z-index: 200;
+  border: none;
+  border-radius: 50%; /* Makes the background round */
+}
+
+.mat-fab.animate {
+  animation: bounce 2s ease infinite; /* Adding bounce animation */
+}
+
+.assistant-icon {
+  width: 32px;
+  height: 32px;
+}
+```
+
+This approach ensures that the icon is both visually appealing and interactive, grabbing the user's attention when the website loads.
