@@ -1,0 +1,22 @@
+Here's a polished status update on the A3P activities, incorporating the details you provided:
+
+---
+
+**A3P Status Update:**
+
+1. **S3 Upload Activity Validation:**
+   - We have successfully validated the S3 upload activity in one of the A3P AWS accounts used as a platform account. This validation was conducted under the assumption that all prerequisites, such as account access and assume roles for the pipelines, are in place.
+
+2. **EC2 Deployment Enablement:**
+   - Currently, there are ongoing discussions about performing or enabling deployments to on-demand EC2 instances through user data orchestration. 
+   - We have identified several items that need to be completed from our end, based on these ongoing conversations. These items are subject to change as the discussions progress.
+
+3. **Discussion and Analysis Phase:**
+   - The deployment enablement to on-demand EC2 instances is still in the discussion and analysis phase. We are actively engaging in these conversations to ensure all necessary requirements and steps are thoroughly understood and planned.
+
+4. **Attached Reference:**
+   - I have attached the current list of minimum tasks we need to accomplish for the A3P onboarding for further reference and context.
+
+---
+
+This structured update should provide a clear picture of the ongoing activities and their current status. Let me know if you need any adjustments or additional information.
